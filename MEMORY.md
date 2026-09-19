@@ -21,7 +21,7 @@
 - Scaffold: validated reference copied; Phase 0 toolchain, setup, baseline, and Nova smoke green; bootstrap LICENSE/commit pending
 - Baseline: backend 20 passed; ruff/format/eslint/tsc clean; frontend build plus 2 tests passed; Cedar 6-row demo and SAM validation passed
 - Human pass rate (study cohort): — · Best agent pass rate: —
-- Last green commit: 2f7070a (`Initial commit`, baseline gates passed)
+- Last green commit: 3bf60e4 (`chore(phase-0): record verified preflight`)
 - Blockers: H1 deadline confirmation pending · LICENSE holder needed · H4 Claude access pending · Amplify console fallback · H5 budget email
 
 ## Next Steps
@@ -94,6 +94,8 @@
 - 2026-09-19 — Phase 0 task 0.7 `make web-bootstrap` failed before app creation because the AWS user lacks
   `amplify:ListApps`. The documented fallback is a human-created Amplify app `pact-web` via “Deploy without Git”;
   record its app id/URL in `.pact/amplify.json`, then patch `AllowedOrigins`.
+- 2026-09-19 — Committed the verified Phase 0 preflight state as `3bf60e4` (`chore(phase-0): record verified
+  preflight`). The bootstrap LICENSE/holder requirement and Phase 0 exit gate remain open.
 
 ## Errors & Fixes
 - 2026-09-19 — `doctor.sh` exited 1 with missing prerequisites → the machine lacks the Phase 0 toolchain → human
