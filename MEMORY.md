@@ -18,16 +18,17 @@
 - API URL: —
 - Stack: pact-dev (us-east-1) — not deployed
 - Bedrock models verified (alias=id): nova-2-lite=us.amazon.nova-2-lite-v1:0; nova-pro=us.amazon.nova-pro-v1:0; Claude unavailable pending H4
-- Scaffold: validated reference copied; Phase 0 toolchain, setup, baseline, and Nova smoke green; bootstrap LICENSE/commit pending
+- Scaffold: validated reference copied; Phase 0 toolchain, setup, baseline, and Nova smoke green; MIT LICENSE and bootstrap commit complete
+- License: MIT; copyright holder confirmed as `Venkata Satya Satvik Viriyala`; task 0.3 commit `3e18dbf5f4ebffcbaad61cdd7f9daefc6823c700`
 - Baseline: backend 20 passed; ruff/format/eslint/tsc clean; frontend build plus 2 tests passed; Cedar 6-row demo and SAM validation passed
 - Human pass rate (study cohort): — · Best agent pass rate: —
 - Last green commit: 3bf60e4 (`chore(phase-0): record verified preflight`)
-- Blockers: H1 exact cutoff/timezone pending · LICENSE holder string needed (Git identity unset) · H4 Claude access pending · Amplify console fallback · H5 budget alarm unverified (`budgets:ViewBudget` denied)
+- Blockers: H1 exact cutoff/timezone pending · H4 Claude access pending · Amplify console fallback · H5 budget alarm unverified (`budgets:ViewBudget` denied)
 
 ## Next Steps
 - [ ] H1: confirm the submission deadline from the schedule, Discord, or email
 - [x] Phase 0: install toolchain items and re-run doctor (all required tools present; LocalStack token optional)
-- [ ] Phase 0: provide the exact LICENSE copyright-holder string, then finish task 0.3
+- [x] Phase 0: complete task 0.3 — exact holder confirmed; MIT LICENSE created; bootstrap commit made
 - [x] Phase 0: run `make setup` (fresh login shell succeeded)
 - [x] Phase 0: complete 0.5 baseline gate (all prescribed checks passed)
 - [x] Phase 0: complete 0.6 AWS + Bedrock preflight (Nova calls passed; Claude blocked by H4; AgentModels set)
@@ -43,9 +44,10 @@
 - 2026-09-19 — [RESOLVED 17:20 IST] Phase 0 toolchain: on macOS run `brew install python@3.12 node awscli
   aws-sam-cli` and install/start Docker Desktop; a fresh login-shell doctor run now passes all required checks.
   LocalStack token remains optional because the default local profile uses DynamoDB Local.
-- 2026-09-19 — Phase 0 task 0.3: initialized a new Git repository on `main` and copied the validated reference
-  scaffold into the workspace. `git config user.name` is empty; tell Claude Code the exact copyright holder string
-  so it can create the MIT LICENSE and make the bootstrap commit.
+- 2026-09-19 — [RESOLVED] Phase 0 task 0.3: initialized a new Git repository on `main` and copied the validated
+  reference scaffold into the workspace. `git config user.name` was empty; the user confirmed the exact holder
+  `Venkata Satya Satvik Viriyala`, and the MIT LICENSE plus bootstrap commit `3e18dbf5f4ebffcbaad61cdd7f9daefc6823c700`
+  were completed.
 - 2026-09-19 — [RESOLVED] Phase 0 task 0.4 toolchain blocker: Python 3.12 and the remaining local tools were
   installed; `make setup` was rerun in a fresh login shell and succeeded.
 - 2026-09-19 — H4: Claude vision access is pending. In the Bedrock console (us-east-1), open Model catalog,
@@ -58,9 +60,9 @@
   `docs/AWS_INFRA.md §7`, or create the `$10` monthly gross-usage alarm in the AWS Billing console.
 - 2026-09-19 — H5: budget alarm needs a human-supplied email. Either provide the email for the command in
   `docs/AWS_INFRA.md §7` or create the `$10` monthly gross-usage alarm in the Billing console.
-- 2026-09-19 — LICENSE holder: `git config --show-origin --get-regexp '^user\.(name|email)$'` returned no
-  entries; no exact holder string is available. Provide the exact legal name or organization string to place
-  after `Copyright (c) 2026`; do not infer it from the machine username, email, or auto-generated commit identity.
+- 2026-09-19 — [RESOLVED] LICENSE holder: `git config --show-origin --get-regexp '^user\.(name|email)$'` returned no
+  entries; the user then confirmed `Venkata Satya Satvik Viriyala`. That exact string was used after
+  `Copyright (c) 2026`; it was not inferred from the machine username or auto-generated commit identity.
 - 2026-09-19 — H5 verification: the user reports the `$10` monthly gross-usage alarm was created in the Billing
   console, but the read-only AWS CLI check was denied by missing `budgets:ViewBudget`. No budget facts were
   returned; keep H5 pending until a permitted read-only check or console-visible facts can be supplied without
@@ -107,6 +109,11 @@
   Billing-console alarm could not be independently verified: redacted `zsh -lic '... aws budgets describe-budgets
   --account-id "$ACCOUNT" --region us-east-1 ... --output json'` reached the account but returned
   `AccessDeniedException` for `budgets:ViewBudget`; no budget facts were verified, so H5 remains pending.
+- 2026-09-19 — Phase 0 task 0.3 completed: the user confirmed the exact copyright holder
+  `Venkata Satya Satvik Viriyala`; root `LICENSE` contains the MIT text with
+  `Copyright (c) 2026 Venkata Satya Satvik Viriyala`. The prescribed scaffold/path check, exact-holder/license
+  check, Git worktree check, and `git diff --check` passed. Commit:
+  `3e18dbf5f4ebffcbaad61cdd7f9daefc6823c700` (`chore: bootstrap PACT from validated reference scaffold`).
 
 ## Errors & Fixes
 - 2026-09-19 — `doctor.sh` exited 1 with missing prerequisites → the machine lacks the Phase 0 toolchain → human
