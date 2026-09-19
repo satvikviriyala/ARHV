@@ -14,7 +14,7 @@
 - Current phase: 0 (preflight)
 - Milestones: M1 human-pass-live [ ] · M2 AI-fails-live [ ] · Early submission [ ] · Final submission [ ]
 - Repo URL: https://github.com/satvikviriyala/ARHV (public; main)
-- Web URL (Amplify): https://main.d1i6xn1rxjcnkk.amplifyapp.com (user-verified metadata for `pact-web`, appId `d1i6xn1rxjcnkk`; manual deployment currently returns 404, so this is not a deployed/live-success claim)
+- Web URL (Amplify): https://main.d1i6xn1rxjcnkk.amplifyapp.com (user-verified metadata for `pact-web`, appId `d1i6xn1rxjcnkk`; live browser testing found the root shell but asset paths serving that shell as `text/html`, and a later fresh navigation returned 401 Basic-auth, so this remains an unverified live-success claim)
 - API URL: —
 - Stack: pact-dev (us-east-1) — not deployed
 - Bedrock models verified (alias=id): nova-2-lite=us.amazon.nova-2-lite-v1:0; nova-pro=us.amazon.nova-pro-v1:0; both Nova calls pass; Claude remains unverified/omitted and optional, with no Anthropic form submitted
@@ -23,8 +23,8 @@
 - Baseline: backend 20 passed; ruff/format/eslint/tsc clean; frontend build plus 2 tests passed; Cedar 6-row demo and SAM validation passed
 - Human pass rate (study cohort): — · Best agent pass rate: —
 - Last green commit: 8f6318a (`docs(phase-0): record exact deadline and gate status`)
-- Amplify artifact check: fresh build has `frontend/dist/index.html`; verified deployment zip has `index.html` and `assets/` at its root
-- Blockers: Amplify console deployment still returns 404; root-correct zip upload plus `Succeed`/live-URL confirmation pending · H5 user-reported $10 alarm not independently verifiable (`budgets:ViewBudget` denied)
+- Amplify artifact check: local `frontend/dist` has root `index.html` and `assets/`; a locally verified zip built from `dist` has those entries at its root; the live deployment remains unverified
+- Blockers: disable Amplify branch/app access control or password protection for the public demo, upload a root-correct zip, wait for `Succeed`, and recheck JS/CSS content types plus `#root` · H5 user-reported $10 alarm not independently verifiable (`budgets:ViewBudget` denied)
 
 ## Next Steps
 - [x] H1: exact deadline confirmed; PLAN compression for a deadline on/after Sun 18:00 IST applied (merge Phases 4 and 5; video target T-4h)
@@ -33,10 +33,10 @@
 - [x] Phase 0: run `make setup` (fresh login shell succeeded)
 - [x] Phase 0: complete 0.5 baseline gate (all prescribed checks passed)
 - [x] Phase 0: complete 0.6 AWS + Bedrock preflight (both Nova calls passed; Claude optional/unverified/omitted; AgentModels set)
-- [ ] Phase 0: complete 0.7 Amplify frontend deployment (metadata is recorded; upload a root-correct zip with `index.html` and `assets/` at top level, wait for `Succeed`, and confirm the live URL; SPA rewrite remains unchanged)
+- [ ] Phase 0: complete 0.7 Amplify frontend deployment (disable branch/app access control or password protection for the public demo; upload a root-correct zip with `index.html` and `assets/` at top level; wait for `Succeed`; recheck JS/CSS content types and `#root`; SPA rewrite remains unchanged)
 - [ ] Phase 0: complete 0.8 budget-alarm verification (user reports console setup; read-only CLI verification is blocked by missing `budgets:ViewBudget`)
 - [x] Phase 0: verify 0.9 existing public GitHub remote (no create/push needed)
-- [ ] Phase 0: resolve 0.7 deployment/404 with console `Succeed` plus live-URL confirmation and 0.8 budget verification; then close Phase 0 before tagging or starting Phase 1
+- [ ] Phase 0: resolve 0.7 by disabling public-demo access control/password protection, uploading the root-correct zip, waiting for console `Succeed`, and confirming asset responses render React into `#root`; then complete 0.8 budget verification and close Phase 0 before tagging or starting Phase 1
 
 ## Human-Blocked
 - 2026-09-19 — [RESOLVED] H1: the user confirmed the exact deadline as “Sunday, September 20, 2026 at 8:00 PM IST.”
@@ -74,6 +74,16 @@
   console, but the read-only AWS CLI check was denied by missing `budgets:ViewBudget`. No budget facts were
   returned; keep H5 pending and user-reported until a permitted read-only check or console-visible facts can be
   supplied without sharing an email address.
+- 2026-09-19 — [ACTION REQUIRED] Live browser testing at
+  `https://main.d1i6xn1rxjcnkk.amplifyapp.com/` verified that the HTML shell returned 200 (517 bytes), but
+  `/assets/index-C4NgNJr.js` and `/assets/index-D6lFZ5CM.css` returned the same HTML shell as `text/html`;
+  the browser reported `Failed to fetch dynamically imported module` for the JS asset, so React never ran.
+  A later fresh navigation returned 401 Basic-auth, meaning Amplify branch/app access control may be enabled.
+  The user must disable branch/app access control or password protection for the public demo, upload a ZIP whose
+  root contains `index.html` and `assets/`, wait for the deployment to show `Succeed`, then recheck the JS/CSS
+  responses (real asset content types and bodies) and confirm the browser renders `#root`. The local build
+  remains separate: `frontend/dist` has the expected root files. The valid SPA rewrite is recorded as unchanged;
+  no AWS resource or application-code change was made, and the live deployment is not claimed fixed.
 
 ## Decisions
 - 2026-09-19 — Project = PACT (agent-resistant human verification). Primary challenge = motion-defined glyph `mdg-v1`: single frames carry no information, so screenshot agents get noise. Rejected: drag-to-moving-target (target path had to be sent to the client, trivially scriptable).
@@ -154,6 +164,10 @@
   user's manual frontend deployment still returns 404; no deployment/live-success claim was made, and the
   valid SPA rewrite remains unchanged. Root-correct console upload plus `Succeed`/live-URL confirmation and
   H5 budget verification remain pending.
+- 2026-09-19 — Live Amplify diagnosis recorded without changing AWS resources or application code: the local
+  build/package is root-correct, but the still-unverified deployment serves the HTML shell for JS/CSS asset
+  requests, preventing React startup; the later 401 Basic-auth response leaves public access control as a
+  possible second blocker. The valid SPA rewrite remains unchanged.
 
 ## Errors & Fixes
 - 2026-09-19 — `doctor.sh` exited 1 with missing prerequisites → the machine lacks the Phase 0 toolchain → human
@@ -183,6 +197,14 @@
 - 2026-09-19 — User-reported Amplify 404 could not be confirmed because no app id, `.pact/amplify.json`, or URL
   was available to query. Local build and root-level packaging passed, so no rewrite or source-code change was
   justified → re-upload the `dist` contents at the deployment root and verify the deployment job in the console.
+- 2026-09-19 — Live Amplify navigation loaded the 517-byte HTML shell at 200, but the JS and CSS asset URLs
+  returned that shell with `Content-Type: text/html`, producing `Failed to fetch dynamically imported module`
+  and preventing React from running → the deployed package/root is wrong or Amplify fallback behavior is
+  catching static assets; a later fresh navigation also returned 401 Basic-auth, so branch/app access control
+  may be enabled → the user must disable public-demo access control/password protection and upload a ZIP with
+  `index.html` and `assets/` at its root, then wait for `Succeed` → verify unauthenticated access, JS/CSS
+  content types and bodies, no dynamic-import error, and a rendered `#root`. Keep the valid SPA rewrite
+  unchanged; the local `frontend/dist` build is not evidence that the live deployment is fixed.
 - 2026-09-19 — Initial `sam validate --lint` exited 127 because the persisted shell could not find `sam` on its
   PATH → reran the same validation through a fresh `zsh -lic` login shell → SAM validation passed; no template
   or configuration error was found.
