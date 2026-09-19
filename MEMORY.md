@@ -22,7 +22,7 @@
 - License: MIT; copyright holder confirmed as `Venkata Satya Satvik Viriyala`; task 0.3 commit `3e18dbf5f4ebffcbaad61cdd7f9daefc6823c700`
 - Baseline: backend 20 passed; ruff/format/eslint/tsc clean; frontend build plus 2 tests passed; Cedar 6-row demo and SAM validation passed
 - Human pass rate (study cohort): — · Best agent pass rate: —
-- Last green commit: 3bf60e4 (`chore(phase-0): record verified preflight`)
+- Last green commit: 8f6318a (`docs(phase-0): record exact deadline and gate status`)
 - Blockers: Amplify console fallback · H5 user-reported $10 alarm not independently verifiable (`budgets:ViewBudget` denied)
 
 ## Next Steps
@@ -127,6 +127,9 @@
   `aws budgets describe-budgets --account-id "$ACCOUNT" --region us-east-1` failed with the exact
   `AccessDeniedException` for `budgets:ViewBudget`; the user-reported `$10` alarm remains not independently
   verifiable and no budget mutation was attempted.
+- 2026-09-19 — Committed this Phase 0 reconciliation as `8f6318a`
+  (`docs(phase-0): record exact deadline and gate status`); no phase tag was created and Phase 1 was not started
+  because the Amplify and budget exit-gate items remain incomplete.
 
 ## Errors & Fixes
 - 2026-09-19 — `doctor.sh` exited 1 with missing prerequisites → the machine lacks the Phase 0 toolchain → human
