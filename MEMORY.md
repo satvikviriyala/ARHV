@@ -10,37 +10,37 @@
 > 6. Never delete history (you may tick Next Steps). Keep Snapshot ≤ 40 lines. Newest Log entries at the bottom.
 
 ## Snapshot
-- Deadline: DATE CONFIRMED as Sun 2026-09-20; exact time/timezone UNCONFIRMED — the official schedule says hours are still being finalised
+- Deadline: Sunday, September 20, 2026 at 8:00 PM IST (user-confirmed exact wording)
 - Current phase: 0 (preflight)
 - Milestones: M1 human-pass-live [ ] · M2 AI-fails-live [ ] · Early submission [ ] · Final submission [ ]
 - Repo URL: https://github.com/satvikviriyala/ARHV (public; main)
 - Web URL (Amplify): — (bootstrap blocked by missing `amplify:ListApps`)
 - API URL: —
 - Stack: pact-dev (us-east-1) — not deployed
-- Bedrock models verified (alias=id): nova-2-lite=us.amazon.nova-2-lite-v1:0; nova-pro=us.amazon.nova-pro-v1:0; Claude unavailable pending H4
+- Bedrock models verified (alias=id): nova-2-lite=us.amazon.nova-2-lite-v1:0; nova-pro=us.amazon.nova-pro-v1:0; both Nova calls pass; Claude remains unverified/omitted and optional, with no Anthropic form submitted
 - Scaffold: validated reference copied; Phase 0 toolchain, setup, baseline, and Nova smoke green; MIT LICENSE and bootstrap commit complete
 - License: MIT; copyright holder confirmed as `Venkata Satya Satvik Viriyala`; task 0.3 commit `3e18dbf5f4ebffcbaad61cdd7f9daefc6823c700`
 - Baseline: backend 20 passed; ruff/format/eslint/tsc clean; frontend build plus 2 tests passed; Cedar 6-row demo and SAM validation passed
 - Human pass rate (study cohort): — · Best agent pass rate: —
 - Last green commit: 3bf60e4 (`chore(phase-0): record verified preflight`)
-- Blockers: H1 exact cutoff/timezone pending · H4 Claude access pending · Amplify console fallback · H5 budget alarm unverified (`budgets:ViewBudget` denied)
+- Blockers: Amplify console fallback · H5 user-reported $10 alarm not independently verifiable (`budgets:ViewBudget` denied)
 
 ## Next Steps
-- [ ] H1: confirm the submission deadline from the schedule, Discord, or email
+- [x] H1: exact deadline confirmed; PLAN compression for a deadline on/after Sun 18:00 IST applied (merge Phases 4 and 5; video target T-4h)
 - [x] Phase 0: install toolchain items and re-run doctor (all required tools present; LocalStack token optional)
 - [x] Phase 0: complete task 0.3 — exact holder confirmed; MIT LICENSE created; bootstrap commit made
 - [x] Phase 0: run `make setup` (fresh login shell succeeded)
 - [x] Phase 0: complete 0.5 baseline gate (all prescribed checks passed)
-- [x] Phase 0: complete 0.6 AWS + Bedrock preflight (Nova calls passed; Claude blocked by H4; AgentModels set)
+- [x] Phase 0: complete 0.6 AWS + Bedrock preflight (both Nova calls passed; Claude optional/unverified/omitted; AgentModels set)
 - [ ] Phase 0: complete 0.7 Amplify bootstrap and record URL (blocked; use documented console fallback)
 - [ ] Phase 0: complete 0.8 budget-alarm verification (user reports console setup; read-only CLI verification is blocked by missing `budgets:ViewBudget`)
 - [x] Phase 0: verify 0.9 existing public GitHub remote (no create/push needed)
-- [ ] Phase 0: once H1 is answered, record task 0.1 and continue with task 0.2
+- [ ] Phase 0: resolve 0.7 Amplify URL/AllowedOrigins and 0.8 budget verification; then close Phase 0 before tagging or starting Phase 1
 
 ## Human-Blocked
-- 2026-09-19 — H1: confirm the submission deadline. Open https://www.wemakedevs.org/aws/first-commit/schedule
-  (or check Discord/email), then tell Claude Code the exact deadline and timezone. No compression decision can be
-  made until this is confirmed.
+- 2026-09-19 — [RESOLVED] H1: the user confirmed the exact deadline as “Sunday, September 20, 2026 at 8:00 PM IST.”
+  PLAN’s “Deadline ≥ Sun 18:00” rule therefore applies: merge Phases 4 and 5 into 2 hours and target the video
+  at T-4h (16:00 IST).
 - 2026-09-19 — [RESOLVED 17:20 IST] Phase 0 toolchain: on macOS run `brew install python@3.12 node awscli
   aws-sam-cli` and install/start Docker Desktop; a fresh login-shell doctor run now passes all required checks.
   LocalStack token remains optional because the default local profile uses DynamoDB Local.
@@ -50,23 +50,21 @@
   were completed.
 - 2026-09-19 — [RESOLVED] Phase 0 task 0.4 toolchain blocker: Python 3.12 and the remaining local tools were
   installed; `make setup` was rerun in a fresh login shell and succeeded.
-- 2026-09-19 — H4: Claude vision access is pending. In the Bedrock console (us-east-1), open Model catalog,
-  select an Anthropic Claude model, and submit the one-time use-case form; do not paste any credentials here.
+- 2026-09-19 — [OPTIONAL] H4: Claude vision access is not required because both verified Nova models are callable.
+  No Anthropic form was submitted; Claude remains unverified and omitted from `AgentModels`.
 - 2026-09-19 — Phase 0 task 0.7 Amplify: the current IAM user lacks `amplify:ListApps`. In the AWS Amplify
   console (us-east-1), create `pact-web` with “Deploy without Git”, branch `main`, and the SPA rewrite; record
   `{"appId":"…","branch":"main","url":"https://main.<appId>.amplifyapp.com","region":"us-east-1"}` in
   `.pact/amplify.json`, then tell Claude Code the app id/URL. IAM changes are not requested.
-- 2026-09-19 — H5: provide an email for the documented `aws budgets create-budget` command in
-  `docs/AWS_INFRA.md §7`, or create the `$10` monthly gross-usage alarm in the AWS Billing console.
-- 2026-09-19 — H5: budget alarm needs a human-supplied email. Either provide the email for the command in
-  `docs/AWS_INFRA.md §7` or create the `$10` monthly gross-usage alarm in the Billing console.
+- 2026-09-19 — [SUPERSEDED] H5 originally asked for an email for the documented create command or console creation;
+  the user now reports the alarm was already created, so no budget create/update/delete action is authorized.
 - 2026-09-19 — [RESOLVED] LICENSE holder: `git config --show-origin --get-regexp '^user\.(name|email)$'` returned no
   entries; the user then confirmed `Venkata Satya Satvik Viriyala`. That exact string was used after
   `Copyright (c) 2026`; it was not inferred from the machine username or auto-generated commit identity.
 - 2026-09-19 — H5 verification: the user reports the `$10` monthly gross-usage alarm was created in the Billing
   console, but the read-only AWS CLI check was denied by missing `budgets:ViewBudget`. No budget facts were
-  returned; keep H5 pending until a permitted read-only check or console-visible facts can be supplied without
-  sharing an email address.
+  returned; keep H5 pending and user-reported until a permitted read-only check or console-visible facts can be
+  supplied without sharing an email address.
 
 ## Decisions
 - 2026-09-19 — Project = PACT (agent-resistant human verification). Primary challenge = motion-defined glyph `mdg-v1`: single frames carry no information, so screenshot agents get noise. Rejected: drag-to-moving-target (target path had to be sent to the client, trivially scriptable).
@@ -116,6 +114,19 @@
   `3e18dbf5f4ebffcbaad61cdd7f9daefc6823c700` (`chore: bootstrap PACT from validated reference scaffold`).
 - 2026-09-19 — Pushed the verified Phase 0 commits through `838f334` to public `origin/main`; no phase tag
   was created because the Phase 0 exit gate remains open.
+- 2026-09-19 — Fresh Phase 0 verification: `zsh -lic 'bash docs/reference/scaffold/scripts/doctor.sh'` passed all
+  required checks; `make test-backend` passed 20 tests; `make lint` passed ruff/format/eslint/tsc; frontend
+  build and Vitest passed (2 tests); `make cedar-demo` printed 6 decisions; `cd backend && sam validate --lint`
+  passed; Nova 2 Lite and Nova Pro converse smoke calls returned OK; `gh repo view` confirmed public `ARHV` on
+  `main`; worktree was clean before this MEMORY update.
+- 2026-09-19 — Fresh `zsh -lic 'make web-bootstrap'` failed before app creation with the exact
+  `AccessDeniedException` for `amplify:ListApps` on
+  `arn:aws:amplify:us-east-1:474668382160:apps/*`; `.pact/amplify.json` is absent and
+  `backend/samconfig.toml` still allows only `http://localhost:5173`.
+- 2026-09-19 — Fresh redacted/read-only
+  `aws budgets describe-budgets --account-id "$ACCOUNT" --region us-east-1` failed with the exact
+  `AccessDeniedException` for `budgets:ViewBudget`; the user-reported `$10` alarm remains not independently
+  verifiable and no budget mutation was attempted.
 
 ## Errors & Fixes
 - 2026-09-19 — `doctor.sh` exited 1 with missing prerequisites → the machine lacks the Phase 0 toolchain → human
@@ -136,6 +147,12 @@
 - 2026-09-19 — Read-only `aws budgets describe-budgets` exited 254 with
   `AccessDeniedException` because the current IAM principal lacks `budgets:ViewBudget` → the budget alarm could
   not be verified → retain H5 pending and require a permitted read-only check or console-visible facts.
+- 2026-09-19 — Fresh `make web-bootstrap` exited 2 with
+  `botocore.exceptions.ClientError: An error occurred (AccessDeniedException) when calling the ListApps operation:
+  User: arn:aws:iam::474668382160:user/liv28 is not authorized to perform: amplify:ListApps on resource:
+  arn:aws:amplify:us-east-1:474668382160:apps/* because no identity-based policy allows the amplify:ListApps action`
+  → current IAM still cannot inspect or create the app → use the documented console fallback and record the app
+  state before closing Phase 0.
 
 ## Open Issues
 - (none yet)
