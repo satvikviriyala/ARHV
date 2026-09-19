@@ -14,7 +14,7 @@
 - Current phase: 0 (preflight)
 - Milestones: M1 human-pass-live [ ] · M2 AI-fails-live [ ] · Early submission [ ] · Final submission [ ]
 - Repo URL: https://github.com/satvikviriyala/ARHV (public; main)
-- Web URL (Amplify): — (bootstrap blocked by missing `amplify:ListApps`)
+- Web URL (Amplify): — (bootstrap/status blocked by missing `amplify:ListApps`; no `.pact/amplify.json` or URL available)
 - API URL: —
 - Stack: pact-dev (us-east-1) — not deployed
 - Bedrock models verified (alias=id): nova-2-lite=us.amazon.nova-2-lite-v1:0; nova-pro=us.amazon.nova-pro-v1:0; both Nova calls pass; Claude remains unverified/omitted and optional, with no Anthropic form submitted
@@ -23,7 +23,8 @@
 - Baseline: backend 20 passed; ruff/format/eslint/tsc clean; frontend build plus 2 tests passed; Cedar 6-row demo and SAM validation passed
 - Human pass rate (study cohort): — · Best agent pass rate: —
 - Last green commit: 8f6318a (`docs(phase-0): record exact deadline and gate status`)
-- Blockers: Amplify console fallback · H5 user-reported $10 alarm not independently verifiable (`budgets:ViewBudget` denied)
+- Amplify artifact check: fresh build has `frontend/dist/index.html`; verified deployment zip has `index.html` and `assets/` at its root
+- Blockers: Amplify console fallback · user-reported 404 not independently verified without app URL · H5 user-reported $10 alarm not independently verifiable (`budgets:ViewBudget` denied)
 
 ## Next Steps
 - [x] H1: exact deadline confirmed; PLAN compression for a deadline on/after Sun 18:00 IST applied (merge Phases 4 and 5; video target T-4h)
@@ -32,7 +33,7 @@
 - [x] Phase 0: run `make setup` (fresh login shell succeeded)
 - [x] Phase 0: complete 0.5 baseline gate (all prescribed checks passed)
 - [x] Phase 0: complete 0.6 AWS + Bedrock preflight (both Nova calls passed; Claude optional/unverified/omitted; AgentModels set)
-- [ ] Phase 0: complete 0.7 Amplify bootstrap and record URL (blocked; use documented console fallback)
+- [ ] Phase 0: complete 0.7 Amplify bootstrap and record URL (blocked; use documented console fallback; upload a zip whose root contains `index.html`)
 - [ ] Phase 0: complete 0.8 budget-alarm verification (user reports console setup; read-only CLI verification is blocked by missing `budgets:ViewBudget`)
 - [x] Phase 0: verify 0.9 existing public GitHub remote (no create/push needed)
 - [ ] Phase 0: resolve 0.7 Amplify URL/AllowedOrigins and 0.8 budget verification; then close Phase 0 before tagging or starting Phase 1
@@ -56,6 +57,9 @@
   console (us-east-1), create `pact-web` with “Deploy without Git”, branch `main`, and the SPA rewrite; record
   `{"appId":"…","branch":"main","url":"https://main.<appId>.amplifyapp.com","region":"us-east-1"}` in
   `.pact/amplify.json`, then tell Claude Code the app id/URL. IAM changes are not requested.
+- 2026-09-19 — Amplify 404 follow-up: in the existing app's `main` branch, choose “Deploy updates” and drag a
+  zip whose top level is `index.html` plus `assets/`; do not upload a parent `frontend/dist` directory. Wait for
+  the deployment job to show `Succeed`, then provide the app id/URL so the live root can be checked.
 - 2026-09-19 — [SUPERSEDED] H5 originally asked for an email for the documented create command or console creation;
   the user now reports the alarm was already created, so no budget create/update/delete action is authorized.
 - 2026-09-19 — [RESOLVED] LICENSE holder: `git config --show-origin --get-regexp '^user\.(name|email)$'` returned no
@@ -123,6 +127,11 @@
   `AccessDeniedException` for `amplify:ListApps` on
   `arn:aws:amplify:us-east-1:474668382160:apps/*`; `.pact/amplify.json` is absent and
   `backend/samconfig.toml` still allows only `http://localhost:5173`.
+- 2026-09-19 — Amplify 404 diagnosis: read-only `aws amplify list-apps` was denied for the current IAM user;
+  no `.pact/amplify.json` or Amplify URL exists. `zsh -lic 'cd frontend && npm run build'` passed;
+  `frontend/dist/index.html` exists, and a zip built from `dist` was verified to contain root `index.html` plus
+  `assets/` (not `frontend/dist/index.html`). The supplied catch-all rewrite was left unchanged; a nested
+  folder in a manual upload remains the likely cause, but the live site was not independently verified.
 - 2026-09-19 — Fresh redacted/read-only
   `aws budgets describe-budgets --account-id "$ACCOUNT" --region us-east-1` failed with the exact
   `AccessDeniedException` for `budgets:ViewBudget`; the user-reported `$10` alarm remains not independently
@@ -156,6 +165,9 @@
   arn:aws:amplify:us-east-1:474668382160:apps/* because no identity-based policy allows the amplify:ListApps action`
   → current IAM still cannot inspect or create the app → use the documented console fallback and record the app
   state before closing Phase 0.
+- 2026-09-19 — User-reported Amplify 404 could not be confirmed because no app id, `.pact/amplify.json`, or URL
+  was available to query. Local build and root-level packaging passed, so no rewrite or source-code change was
+  justified → re-upload the `dist` contents at the deployment root and verify the deployment job in the console.
 
 ## Open Issues
 - (none yet)
