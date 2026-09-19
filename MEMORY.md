@@ -114,6 +114,8 @@
   `Copyright (c) 2026 Venkata Satya Satvik Viriyala`. The prescribed scaffold/path check, exact-holder/license
   check, Git worktree check, and `git diff --check` passed. Commit:
   `3e18dbf5f4ebffcbaad61cdd7f9daefc6823c700` (`chore: bootstrap PACT from validated reference scaffold`).
+- 2026-09-19 — Pushed the verified Phase 0 commits through `838f334` to public `origin/main`; no phase tag
+  was created because the Phase 0 exit gate remains open.
 
 ## Errors & Fixes
 - 2026-09-19 — `doctor.sh` exited 1 with missing prerequisites → the machine lacks the Phase 0 toolchain → human
