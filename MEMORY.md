@@ -13,34 +13,51 @@
 - Deadline: DATE CONFIRMED as Sun 2026-09-20; exact time/timezone UNCONFIRMED — the official schedule says hours are still being finalised
 - Current phase: 0 (preflight)
 - Milestones: M1 human-pass-live [ ] · M2 AI-fails-live [ ] · Early submission [ ] · Final submission [ ]
-- Repo URL: —
-- Web URL (Amplify): —
+- Repo URL: https://github.com/satvikviriyala/ARHV (public; main)
+- Web URL (Amplify): — (bootstrap blocked by missing `amplify:ListApps`)
 - API URL: —
 - Stack: pact-dev (us-east-1) — not deployed
-- Bedrock models verified (alias=id): — (fill in during Phase 0 discovery)
-- Scaffold: validated reference copied; bootstrap LICENSE/commit pending
+- Bedrock models verified (alias=id): nova-2-lite=us.amazon.nova-2-lite-v1:0; nova-pro=us.amazon.nova-pro-v1:0; Claude unavailable pending H4
+- Scaffold: validated reference copied; Phase 0 toolchain, setup, baseline, and Nova smoke green; bootstrap LICENSE/commit pending
+- Baseline: backend 20 passed; ruff/format/eslint/tsc clean; frontend build plus 2 tests passed; Cedar 6-row demo and SAM validation passed
 - Human pass rate (study cohort): — · Best agent pass rate: —
-- Last green commit: —
-- Blockers: H1 deadline confirmation pending · Phase 0 toolchain missing · LICENSE holder needed
+- Last green commit: 2f7070a (`Initial commit`, baseline gates passed)
+- Blockers: H1 deadline confirmation pending · LICENSE holder needed · H4 Claude access pending · Amplify console fallback · H5 budget email
 
 ## Next Steps
 - [ ] H1: confirm the submission deadline from the schedule, Discord, or email
-- [ ] Phase 0: install missing toolchain items, then re-run doctor
+- [x] Phase 0: install toolchain items and re-run doctor (all required tools present; LocalStack token optional)
 - [ ] Phase 0: provide the LICENSE copyright holder, then finish task 0.3
+- [x] Phase 0: run `make setup` (fresh login shell succeeded)
+- [x] Phase 0: complete 0.5 baseline gate (all prescribed checks passed)
+- [x] Phase 0: complete 0.6 AWS + Bedrock preflight (Nova calls passed; Claude blocked by H4; AgentModels set)
+- [ ] Phase 0: complete 0.7 Amplify bootstrap and record URL (blocked; use documented console fallback)
+- [ ] Phase 0: complete 0.8 budget alarm (requires H5 email)
+- [x] Phase 0: verify 0.9 existing public GitHub remote (no create/push needed)
 - [ ] Phase 0: once H1 is answered, record task 0.1 and continue with task 0.2
 
 ## Human-Blocked
 - 2026-09-19 — H1: confirm the submission deadline. Open https://www.wemakedevs.org/aws/first-commit/schedule
   (or check Discord/email), then tell Claude Code the exact deadline and timezone. No compression decision can be
   made until this is confirmed.
-- 2026-09-19 — Phase 0 toolchain: on macOS run `brew install python@3.12 node awscli aws-sam-cli` and install/start
-  Docker Desktop; then re-run `bash docs/reference/scaffold/scripts/doctor.sh`. AWS credentials cannot be checked
-  until the AWS CLI is installed.
+- 2026-09-19 — [RESOLVED 17:20 IST] Phase 0 toolchain: on macOS run `brew install python@3.12 node awscli
+  aws-sam-cli` and install/start Docker Desktop; a fresh login-shell doctor run now passes all required checks.
+  LocalStack token remains optional because the default local profile uses DynamoDB Local.
 - 2026-09-19 — Phase 0 task 0.3: initialized a new Git repository on `main` and copied the validated reference
   scaffold into the workspace. `git config user.name` is empty; tell Claude Code the exact copyright holder string
   so it can create the MIT LICENSE and make the bootstrap commit.
-- 2026-09-19 — Phase 0 task 0.4: install the missing Python 3.12 toolchain before retrying `make setup`; the exact
-  command failed at `python3.12 -m venv .venv`.
+- 2026-09-19 — [RESOLVED] Phase 0 task 0.4 toolchain blocker: Python 3.12 and the remaining local tools were
+  installed; `make setup` was rerun in a fresh login shell and succeeded.
+- 2026-09-19 — H4: Claude vision access is pending. In the Bedrock console (us-east-1), open Model catalog,
+  select an Anthropic Claude model, and submit the one-time use-case form; do not paste any credentials here.
+- 2026-09-19 — Phase 0 task 0.7 Amplify: the current IAM user lacks `amplify:ListApps`. In the AWS Amplify
+  console (us-east-1), create `pact-web` with “Deploy without Git”, branch `main`, and the SPA rewrite; record
+  `{"appId":"…","branch":"main","url":"https://main.<appId>.amplifyapp.com","region":"us-east-1"}` in
+  `.pact/amplify.json`, then tell Claude Code the app id/URL. IAM changes are not requested.
+- 2026-09-19 — H5: provide an email for the documented `aws budgets create-budget` command in
+  `docs/AWS_INFRA.md §7`, or create the `$10` monthly gross-usage alarm in the AWS Billing console.
+- 2026-09-19 — H5: budget alarm needs a human-supplied email. Either provide the email for the command in
+  `docs/AWS_INFRA.md §7` or create the `$10` monthly gross-usage alarm in the Billing console.
 
 ## Decisions
 - 2026-09-19 — Project = PACT (agent-resistant human verification). Primary challenge = motion-defined glyph `mdg-v1`: single frames carry no information, so screenshot agents get noise. Rejected: drag-to-moving-target (target path had to be sent to the client, trivially scriptable).
@@ -60,12 +77,40 @@
   path check passed. LICENSE and the bootstrap commit remain pending the copyright holder.
 - 2026-09-19 — Phase 0 task 0.4 ran `make setup`; it stopped at the missing Python 3.12 interpreter, so baseline
   verification could not start.
+- 2026-09-19 — Phase 0 task 0.2 re-run through `zsh -lic 'bash docs/reference/scaffold/scripts/doctor.sh'`;
+  all required tools, Docker daemon, AWS credentials, and us-east-1 passed. LocalStack token was the only warning.
+- 2026-09-19 — Phase 0 task 0.4 completed with `zsh -lic 'make setup'`: Python dependencies installed and
+  `frontend/npm install` added 398 packages with 0 vulnerabilities. npm emitted peer-dependency warnings but
+  exited 0; the documented `--legacy-peer-deps` fallback was not used. Baseline gate is next.
+- 2026-09-19 — Phase 0 task 0.5 passed every prescribed gate: `make test-backend` = 20 passed;
+  `make lint` = ruff/format/eslint/tsc clean; frontend build and Vitest = 2 tests passed; `make cedar-demo`
+  printed all 6 decisions; `sam validate --lint` reported a valid SAM template.
+- 2026-09-19 — Phase 0 task 0.6 passed AWS identity, profile discovery, Nova 2 Lite, and Nova Pro smoke calls.
+  The strongest listed US Claude profile (`us.anthropic.claude-opus-5`) was unavailable to this account.
+  `backend/samconfig.toml` now sets the two verified Nova aliases; Claude is intentionally omitted.
+- 2026-09-19 — Phase 0 task 0.9 verified the existing `origin` remote and GitHub repository:
+  `gh auth status` passed, `gh repo view` reported `isPrivate=false` and default branch `main`.
+  No `gh repo create` or push was run.
+- 2026-09-19 — Phase 0 task 0.7 `make web-bootstrap` failed before app creation because the AWS user lacks
+  `amplify:ListApps`. The documented fallback is a human-created Amplify app `pact-web` via “Deploy without Git”;
+  record its app id/URL in `.pact/amplify.json`, then patch `AllowedOrigins`.
 
 ## Errors & Fixes
 - 2026-09-19 — `doctor.sh` exited 1 with missing prerequisites → the machine lacks the Phase 0 toolchain → human
   must install the listed tools; verification is pending a second doctor run.
 - 2026-09-19 — `make setup` exited 2 because `/bin/bash: python3.12: command not found` → Python 3.12 is absent →
   install the Phase 0 toolchain, then rerun `make setup`; no environment was created.
+- 2026-09-19 — A doctor run from the persisted non-login agent shell falsely reported Homebrew tools missing →
+  its PATH predated installation → reran through a fresh zsh login shell; doctor exited 0 with all required tools present.
+- 2026-09-19 — `npm install` emitted ERESOLVE peer-dependency warnings while resolving React 19 with
+  `@xstate/react`, but did not fail → keep the lockfile install as-is; no legacy-peer-deps override was warranted.
+- 2026-09-19 — `aws bedrock-runtime converse --model-id us.anthropic.claude-opus-5` returned
+  `AccessDeniedException: anthropic.claude-opus-5 is not available for this account` → the account lacks access
+  to the selected Claude profile (Anthropic access form/H4 is the documented cause) → omitted the Claude alias;
+  AWS identity plus both Nova converse smoke calls verified the remaining Bedrock path.
+- 2026-09-19 — `make web-bootstrap` returned `AccessDeniedException` for `amplify:ListApps` → the current IAM
+  identity has no Amplify read permission → no IAM change was authorized; use the AWS console fallback and verify
+  the resulting `.pact/amplify.json`/URL before continuing.
 
 ## Open Issues
 - (none yet)
