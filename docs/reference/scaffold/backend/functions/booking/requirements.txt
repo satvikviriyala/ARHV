@@ -1,0 +1,1 @@
+# No third-party deps: pact_core (layer) + boto3 (Lambda runtime) cover this function.

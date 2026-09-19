@@ -1,0 +1,30 @@
+# Local data plane for the Build It track. Pick ONE profile:
+#   make local-up                          -> DynamoDB Local (official AWS image, no account needed)
+#   make local-up LOCAL_PROFILE=localstack -> LocalStack (needs a free LOCALSTACK_AUTH_TOKEN since March 2026)
+# Lambda containers started by `sam local start-api --docker-network pact-local` reach these by container name:
+#   ddb profile -> http://dynamodb-local:8000 (backend/env.local.json)
+#   localstack  -> http://localstack:4566     (backend/env.localstack.json)
+name: pact-local
+
+services:
+  dynamodb-local:
+    profiles: ["ddb"]
+    image: amazon/dynamodb-local:latest
+    container_name: dynamodb-local
+    command: ["-jar", "DynamoDBLocal.jar", "-sharedDb", "-inMemory"]
+    ports: ["8000:8000"]
+    networks: [pact-local]
+
+  localstack:
+    profiles: ["localstack"]
+    image: localstack/localstack:latest
+    container_name: localstack
+    ports: ["4566:4566"]
+    environment:
+      LOCALSTACK_AUTH_TOKEN: ${LOCALSTACK_AUTH_TOKEN:-}
+      SERVICES: dynamodb,s3,secretsmanager
+    networks: [pact-local]
+
+networks:
+  pact-local:
+    name: pact-local

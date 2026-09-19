@@ -1,0 +1,24 @@
+// PACT authorization schema (Cedar). Evaluated by cedarpy inside the Lambda authorizer
+// (deployed) and in pytest / scripts/cedar_demo.py (local). Same files, both tracks.
+namespace Pact {
+  // Who is asking. `assurance` is set from the verified PACT token:
+  //   "motion"  -> passed the motion-defined glyph challenge
+  //   "account" -> accessible path: signed in with a verified Cognito account
+  entity Visitor = {
+    assurance: String,
+  };
+
+  // What is being protected (a fictional high-demand booking counter).
+  entity Counter = {
+    kind: String,
+  };
+
+  action "BookTicket" appliesTo {
+    principal: [Visitor],
+    resource: [Counter],
+    context: {
+      tokenReplayed: Bool,     // true if this token's jti was already used
+      bookingsToday: Long,     // bookings already made today by this account (0 for motion path)
+    },
+  };
+}

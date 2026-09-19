@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "defaultMode": "acceptEdits",
+    "allow": [
+      "Bash(make *)",
+      "Bash(bash scripts/doctor.sh)",
+      "Bash(bash docs/reference/scaffold/scripts/doctor.sh)",
+      "Bash(.venv/bin/python *)",
+      "Bash(.venv/bin/pip *)",
+      "Bash(.venv/bin/ruff *)",
+      "Bash(python3.12 -m venv *)",
+      "Bash(npm install *)",
+      "Bash(npm ci *)",
+      "Bash(npm run *)",
+      "Bash(npx vitest *)",
+      "Bash(npx tsc *)",
+      "Bash(npx eslint *)",
+      "Bash(sam validate *)",
+      "Bash(sam build *)",
+      "Bash(sam deploy *)",
+      "Bash(sam local *)",
+      "Bash(sam logs *)",
+      "Bash(aws sts get-caller-identity *)",
+      "Bash(aws cloudformation describe-stacks *)",
+      "Bash(aws cloudformation describe-stack-events *)",
+      "Bash(aws logs *)",
+      "Bash(aws bedrock list-foundation-models *)",
+      "Bash(aws bedrock list-inference-profiles *)",
+      "Bash(aws bedrock-runtime converse *)",
+      "Bash(aws dynamodb get-item *)",
+      "Bash(aws dynamodb query *)",
+      "Bash(aws amplify list-apps *)",
+      "Bash(aws amplify get-job *)",
+      "Bash(docker compose *)",
+      "Bash(docker ps *)",
+      "Bash(ollama list *)",
+      "Bash(ollama show *)",
+      "Bash(ollama pull *)",
+      "Bash(git status *)",
+      "Bash(git diff *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git log *)",
+      "Bash(git tag *)",
+      "Bash(git stash *)",
+      "Bash(curl -s *)"
+    ],
+    "ask": [
+      "Bash(git push *)",
+      "Bash(gh repo create *)",
+      "Bash(aws budgets *)",
+      "Bash(aws amplify create-app *)",
+      "Bash(sam delete *)"
+    ],
+    "deny": [
+      "Bash(git push --force *)",
+      "Bash(git push -f *)",
+      "Bash(git reset --hard *)",
+      "Bash(git clean -fd *)",
+      "Bash(rm -rf / *)",
+      "Bash(rm -rf ~ *)",
+      "Bash(aws cloudformation delete-stack *)",
+      "Bash(aws dynamodb delete-table *)",
+      "Bash(aws s3 rb *)",
+      "Bash(aws s3 rm *)",
+      "Bash(aws iam *)",
+      "Bash(aws secretsmanager get-secret-value *)",
+      "Read(~/.aws/credentials)",
+      "Read(./.env)",
+      "Read(./.env.*)"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          { "type": "command", "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/session_context.py\"", "timeout": 10 }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          { "type": "command", "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/memory_guard.py\"", "timeout": 20 }
+        ]
+      }
+    ]
+  }
+}

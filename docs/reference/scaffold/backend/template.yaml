@@ -1,0 +1,298 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  PACT - Proof-of-Agency Challenge Test. Agent-resistant human verification
+  (motion-defined glyph challenge) + Cedar-gated protected action + Bedrock red-team.
+
+Parameters:
+  Stage:
+    Type: String
+    Default: dev
+    AllowedPattern: "[a-z0-9-]+"
+  AllowedOrigins:
+    Type: CommaDelimitedList
+    Default: "http://localhost:5173"
+    Description: Exact browser origins allowed by CORS (add the Amplify URL after Phase 0).
+  BedrockRegion:
+    Type: String
+    Default: us-east-1
+  AgentModels:
+    Type: String
+    Description: "Comma list of alias=bedrockModelOrProfileId. First entry is the default."
+    Default: "nova-2-lite=us.amazon.nova-2-lite-v1:0,nova-pro=us.amazon.nova-pro-v1:0"
+  AgentRunsDailyCap:
+    Type: Number
+    Default: 300
+    MinValue: 1
+
+Globals:
+  Function:
+    Runtime: python3.12
+    Architectures: [arm64]
+    Timeout: 10
+    MemorySize: 512
+    Layers:
+      - !Ref PactCoreLayer
+    LoggingConfig:
+      LogFormat: JSON
+      ApplicationLogLevel: INFO
+      SystemLogLevel: WARN
+    Environment:
+      Variables:
+        STAGE: !Ref Stage
+        TABLE_NAME: !Ref PactTable
+        TOKEN_SECRET_ARN: !Ref TokenSecret
+        # Local-only overrides. Empty in the cloud. `sam local` can only override variables that are
+        # declared here, so they must exist in the template (values come from backend/env.local.json).
+        PACT_DDB_ENDPOINT: ""
+        PACT_TOKEN_SECRET: ""
+        PACT_LOCAL_DEV: ""
+
+Resources:
+  # ---------- Data ----------
+  PactTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub pact-${Stage}
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - { AttributeName: PK, AttributeType: S }
+        - { AttributeName: SK, AttributeType: S }
+      KeySchema:
+        - { AttributeName: PK, KeyType: HASH }
+        - { AttributeName: SK, KeyType: RANGE }
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+
+  TokenSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: !Sub pact/${Stage}/token-signing-key
+      Description: HMAC key for PACT humanity tokens (auto-generated, never leaves AWS).
+      GenerateSecretString:
+        PasswordLength: 64
+        ExcludePunctuation: true
+
+  ArtifactsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault: { SSEAlgorithm: AES256 }
+      LifecycleConfiguration:
+        Rules:
+          - Id: expire-agent-run-frames
+            Status: Enabled
+            Prefix: runs/
+            ExpirationInDays: 7
+
+  # ---------- Identity (accessible, non-cognitive path) ----------
+  UserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: !Sub pact-${Stage}-users
+      UsernameAttributes: [email]
+      AutoVerifiedAttributes: [email]
+      AccountRecoverySetting:
+        RecoveryMechanisms:
+          - { Name: verified_email, Priority: 1 }
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireLowercase: true
+          RequireNumbers: true
+          RequireSymbols: false
+          RequireUppercase: false
+
+  UserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      UserPoolId: !Ref UserPool
+      ClientName: !Sub pact-${Stage}-web
+      GenerateSecret: false
+      ExplicitAuthFlows: [ALLOW_USER_SRP_AUTH, ALLOW_REFRESH_TOKEN_AUTH]
+      PreventUserExistenceErrors: ENABLED
+
+  # ---------- Shared code ----------
+  PactCoreLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: !Sub pact-core-${Stage}
+      ContentUri: layers/core/
+      CompatibleRuntimes: [python3.12]
+      CompatibleArchitectures: [arm64]
+      RetentionPolicy: Delete
+    Metadata:
+      BuildMethod: python3.12
+      BuildArchitecture: arm64
+
+  # ---------- API ----------
+  PactHttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      CorsConfiguration:
+        AllowOrigins: !Ref AllowedOrigins
+        AllowHeaders: [content-type, authorization, x-pact-token, x-pact-cohort]
+        AllowMethods: [GET, POST, OPTIONS]
+        MaxAge: 600
+      DefaultRouteSettings:
+        ThrottlingBurstLimit: 50
+        ThrottlingRateLimit: 25
+      Auth:
+        Authorizers:
+          PactTokenAuthorizer:
+            FunctionArn: !GetAtt AuthorizerFunction.Arn
+            AuthorizerPayloadFormatVersion: "2.0"
+            EnableSimpleResponses: true
+            EnableFunctionDefaultPermissions: true
+            Identity:
+              Headers: [x-pact-token]
+              ReauthorizeEvery: 0          # single-use tokens: never cache decisions
+          CognitoAuthorizer:
+            IdentitySource: $request.header.Authorization
+            JwtConfiguration:
+              issuer: !Sub https://cognito-idp.${AWS::Region}.amazonaws.com/${UserPool}
+              audience:
+                - !Ref UserPoolClient
+
+  # Public, anonymous API (one function, routed by routeKey): challenge + stats + agent runs.
+  ApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/api/
+      Handler: app.handler
+      MemorySize: 1024                  # challenge generation is CPU-bound pure Python
+      Environment:
+        Variables:
+          ARTIFACTS_BUCKET: !Ref ArtifactsBucket
+          WORKER_FUNCTION_NAME: !Ref AgentWorkerFunction
+          AGENT_MODELS: !Ref AgentModels
+          AGENT_RUNS_DAILY_CAP: !Ref AgentRunsDailyCap
+      Policies:
+        - DynamoDBCrudPolicy: { TableName: !Ref PactTable }
+        - AWSSecretsManagerGetSecretValuePolicy: { SecretArn: !Ref TokenSecret }
+        - S3ReadPolicy: { BucketName: !Ref ArtifactsBucket }
+        - LambdaInvokePolicy: { FunctionName: !Ref AgentWorkerFunction }
+      Events:
+        CreateChallenge:
+          Type: HttpApi
+          Properties: { ApiId: !Ref PactHttpApi, Path: /v1/challenges, Method: POST }
+        AnswerChallenge:
+          Type: HttpApi
+          Properties: { ApiId: !Ref PactHttpApi, Path: "/v1/challenges/{challengeId}/answers", Method: POST }
+        GetStats:
+          Type: HttpApi
+          Properties: { ApiId: !Ref PactHttpApi, Path: /v1/stats, Method: GET }
+        StartAgentRun:
+          Type: HttpApi
+          Properties: { ApiId: !Ref PactHttpApi, Path: /v1/agent-runs, Method: POST }
+        GetAgentRun:
+          Type: HttpApi
+          Properties: { ApiId: !Ref PactHttpApi, Path: "/v1/agent-runs/{runId}", Method: GET }
+        Health:
+          Type: HttpApi
+          Properties: { ApiId: !Ref PactHttpApi, Path: /v1/health, Method: GET }
+
+  # Trust boundary 1: verifies PACT tokens and asks Cedar for a decision.
+  AuthorizerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/authorizer/
+      Handler: app.handler
+      Policies:
+        - DynamoDBCrudPolicy: { TableName: !Ref PactTable }
+        - AWSSecretsManagerGetSecretValuePolicy: { SecretArn: !Ref TokenSecret }
+
+  # Read-only twin of the authorizer: explains the Cedar decision for a token without consuming it.
+  ExplainFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/authorizer/
+      Handler: app.explain_handler
+      Policies:
+        - DynamoDBReadPolicy: { TableName: !Ref PactTable }
+        - AWSSecretsManagerGetSecretValuePolicy: { SecretArn: !Ref TokenSecret }
+      Events:
+        Explain:
+          Type: HttpApi
+          Properties: { ApiId: !Ref PactHttpApi, Path: /v1/authz/explain, Method: POST }
+
+  # Trust boundary 2: the protected action. Only reachable through the Cedar authorizer.
+  BookingFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/booking/
+      Handler: app.handler
+      Policies:
+        - DynamoDBCrudPolicy: { TableName: !Ref PactTable }
+      Events:
+        Book:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref PactHttpApi
+            Path: /v1/demo/bookings
+            Method: POST
+            Auth:
+              Authorizer: PactTokenAuthorizer
+
+  # Trust boundary 3: accessible path. Cognito-verified account -> PACT token (assurance=account).
+  AccountTokenFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/account_token/
+      Handler: app.handler
+      Policies:
+        - DynamoDBCrudPolicy: { TableName: !Ref PactTable }
+        - AWSSecretsManagerGetSecretValuePolicy: { SecretArn: !Ref TokenSecret }
+      Events:
+        MintAccountToken:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref PactHttpApi
+            Path: /v1/tokens/account
+            Method: POST
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+  # Async red-team worker: Strands Agents + Amazon Bedrock. Invoked with InvocationType=Event.
+  AgentWorkerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/agent_worker/
+      Handler: app.handler
+      Timeout: 180
+      MemorySize: 1024
+      Environment:
+        Variables:
+          ARTIFACTS_BUCKET: !Ref ArtifactsBucket
+          BEDROCK_REGION: !Ref BedrockRegion
+          AGENT_MODELS: !Ref AgentModels
+      Policies:
+        - DynamoDBCrudPolicy: { TableName: !Ref PactTable }
+        - S3CrudPolicy: { BucketName: !Ref ArtifactsBucket }
+        - Statement:
+            - Effect: Allow
+              Action:
+                - bedrock:InvokeModel
+                - bedrock:InvokeModelWithResponseStream
+              Resource: "*"
+
+Outputs:
+  ApiUrl:
+    Value: !Sub https://${PactHttpApi}.execute-api.${AWS::Region}.amazonaws.com
+  UserPoolId:
+    Value: !Ref UserPool
+  UserPoolClientId:
+    Value: !Ref UserPoolClient
+  TableName:
+    Value: !Ref PactTable
+  ArtifactsBucketName:
+    Value: !Ref ArtifactsBucket
+  Region:
+    Value: !Ref AWS::Region

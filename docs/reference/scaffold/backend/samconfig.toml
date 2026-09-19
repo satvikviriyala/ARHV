@@ -1,0 +1,28 @@
+# SAM CLI config for PACT. `sam build` / `sam deploy` read this from backend/.
+version = 0.1
+
+[default.global.parameters]
+stack_name = "pact-dev"
+
+[default.build.parameters]
+cached = true
+parallel = true
+use_container = true          # builds in a Lambda-like container -> correct arm64 wheels (cedarpy, pydantic-core)
+
+[default.validate.parameters]
+lint = true
+
+[default.deploy.parameters]
+capabilities = "CAPABILITY_IAM CAPABILITY_AUTO_EXPAND"
+confirm_changeset = false
+fail_on_empty_changeset = false
+resolve_s3 = true
+region = "us-east-1"
+# scripts/bootstrap_amplify.py rewrites this line to add the Amplify URL to AllowedOrigins.
+parameter_overrides = "Stage=\"dev\" AllowedOrigins=\"http://localhost:5173\""
+
+[default.local_start_api.parameters]
+port = 3000
+docker_network = "pact-local"
+env_vars = "env.local.json"
+warm_containers = "LAZY"
