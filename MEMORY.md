@@ -14,7 +14,7 @@
 - Current phase: 0 (preflight)
 - Milestones: M1 human-pass-live [ ] · M2 AI-fails-live [ ] · Early submission [ ] · Final submission [ ]
 - Repo URL: https://github.com/satvikviriyala/ARHV (public; main)
-- Web URL (Amplify): — (bootstrap/status blocked by missing `amplify:ListApps`; no `.pact/amplify.json` or URL available)
+- Web URL (Amplify): https://main.d1i6xn1rxjcnkk.amplifyapp.com (user-verified metadata for `pact-web`, appId `d1i6xn1rxjcnkk`; manual deployment currently returns 404, so this is not a deployed/live-success claim)
 - API URL: —
 - Stack: pact-dev (us-east-1) — not deployed
 - Bedrock models verified (alias=id): nova-2-lite=us.amazon.nova-2-lite-v1:0; nova-pro=us.amazon.nova-pro-v1:0; both Nova calls pass; Claude remains unverified/omitted and optional, with no Anthropic form submitted
@@ -24,7 +24,7 @@
 - Human pass rate (study cohort): — · Best agent pass rate: —
 - Last green commit: 8f6318a (`docs(phase-0): record exact deadline and gate status`)
 - Amplify artifact check: fresh build has `frontend/dist/index.html`; verified deployment zip has `index.html` and `assets/` at its root
-- Blockers: Amplify console fallback · user-reported 404 not independently verified without app URL · H5 user-reported $10 alarm not independently verifiable (`budgets:ViewBudget` denied)
+- Blockers: Amplify console deployment still returns 404; root-correct zip upload plus `Succeed`/live-URL confirmation pending · H5 user-reported $10 alarm not independently verifiable (`budgets:ViewBudget` denied)
 
 ## Next Steps
 - [x] H1: exact deadline confirmed; PLAN compression for a deadline on/after Sun 18:00 IST applied (merge Phases 4 and 5; video target T-4h)
@@ -33,10 +33,10 @@
 - [x] Phase 0: run `make setup` (fresh login shell succeeded)
 - [x] Phase 0: complete 0.5 baseline gate (all prescribed checks passed)
 - [x] Phase 0: complete 0.6 AWS + Bedrock preflight (both Nova calls passed; Claude optional/unverified/omitted; AgentModels set)
-- [ ] Phase 0: complete 0.7 Amplify bootstrap and record URL (blocked; use documented console fallback; upload a zip whose root contains `index.html`)
+- [ ] Phase 0: complete 0.7 Amplify frontend deployment (metadata is recorded; upload a root-correct zip with `index.html` and `assets/` at top level, wait for `Succeed`, and confirm the live URL; SPA rewrite remains unchanged)
 - [ ] Phase 0: complete 0.8 budget-alarm verification (user reports console setup; read-only CLI verification is blocked by missing `budgets:ViewBudget`)
 - [x] Phase 0: verify 0.9 existing public GitHub remote (no create/push needed)
-- [ ] Phase 0: resolve 0.7 Amplify URL/AllowedOrigins and 0.8 budget verification; then close Phase 0 before tagging or starting Phase 1
+- [ ] Phase 0: resolve 0.7 deployment/404 with console `Succeed` plus live-URL confirmation and 0.8 budget verification; then close Phase 0 before tagging or starting Phase 1
 
 ## Human-Blocked
 - 2026-09-19 — [RESOLVED] H1: the user confirmed the exact deadline as “Sunday, September 20, 2026 at 8:00 PM IST.”
@@ -60,6 +60,11 @@
 - 2026-09-19 — Amplify 404 follow-up: in the existing app's `main` branch, choose “Deploy updates” and drag a
   zip whose top level is `index.html` plus `assets/`; do not upload a parent `frontend/dist` directory. Wait for
   the deployment job to show `Succeed`, then provide the app id/URL so the live root can be checked.
+- 2026-09-19 — [PARTIALLY RESOLVED] Amplify metadata: the user verified app `pact-web` (`d1i6xn1rxjcnkk`),
+  branch `main`, region `us-east-1`, and URL `https://main.d1i6xn1rxjcnkk.amplifyapp.com`; those four fields
+  are recorded in `.pact/amplify.json`, and `AllowedOrigins` now includes localhost plus that exact URL. The
+  manual deployment still returns 404, so the human must upload a root-correct zip (`index.html` and `assets/`
+  at the top level), wait for `Succeed`, and confirm the live URL. The valid SPA rewrite is unchanged.
 - 2026-09-19 — [SUPERSEDED] H5 originally asked for an email for the documented create command or console creation;
   the user now reports the alarm was already created, so no budget create/update/delete action is authorized.
 - 2026-09-19 — [RESOLVED] LICENSE holder: `git config --show-origin --get-regexp '^user\.(name|email)$'` returned no
@@ -139,6 +144,16 @@
 - 2026-09-19 — Committed this Phase 0 reconciliation as `8f6318a`
   (`docs(phase-0): record exact deadline and gate status`); no phase tag was created and Phase 1 was not started
   because the Amplify and budget exit-gate items remain incomplete.
+- 2026-09-19 — User supplied verified Amplify metadata for `pact-web`: appId `d1i6xn1rxjcnkk`, branch `main`,
+  URL `https://main.d1i6xn1rxjcnkk.amplifyapp.com`, region `us-east-1`. Created `.pact/amplify.json` with
+  exactly those four fields (the existing `.pact/` gitignore remains unchanged) and patched only
+  `AllowedOrigins` to `http://localhost:5173,https://main.d1i6xn1rxjcnkk.amplifyapp.com`; verified Nova
+  `AgentModels` aliases and all other samconfig parameters remain unchanged.
+- 2026-09-19 — Configuration checks passed: exact metadata assertion, `git diff --check`, ReadLints with no
+  errors, and `zsh -lic 'sam validate --lint'` (`backend/template.yaml is a valid SAM Template`). The
+  user's manual frontend deployment still returns 404; no deployment/live-success claim was made, and the
+  valid SPA rewrite remains unchanged. Root-correct console upload plus `Succeed`/live-URL confirmation and
+  H5 budget verification remain pending.
 
 ## Errors & Fixes
 - 2026-09-19 — `doctor.sh` exited 1 with missing prerequisites → the machine lacks the Phase 0 toolchain → human
@@ -168,6 +183,9 @@
 - 2026-09-19 — User-reported Amplify 404 could not be confirmed because no app id, `.pact/amplify.json`, or URL
   was available to query. Local build and root-level packaging passed, so no rewrite or source-code change was
   justified → re-upload the `dist` contents at the deployment root and verify the deployment job in the console.
+- 2026-09-19 — Initial `sam validate --lint` exited 127 because the persisted shell could not find `sam` on its
+  PATH → reran the same validation through a fresh `zsh -lic` login shell → SAM validation passed; no template
+  or configuration error was found.
 
 ## Open Issues
 - (none yet)
