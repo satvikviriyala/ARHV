@@ -14,22 +14,22 @@
 - Current phase: Sprint S4
 - Milestones: M1 human-pass-live [ ] · M2 AI-fails-live [x] · Early submission [ ] · Final submission [ ]
 - Repo URL: https://github.com/satvikviriyala/ARHV (public; main)
-- Web URL (Amplify): https://main.d1i6xn1rxjcnkk.amplifyapp.com (`pact-web`, appId `d1i6xn1rxjcnkk`; deployment job 12 reported `SUCCEED`; immediate-success sensor-only mobile bundle deployed)
+- Web URL (Amplify): https://main.d1i6xn1rxjcnkk.amplifyapp.com (`pact-web`, appId `d1i6xn1rxjcnkk`; deployment job 13 reported `SUCCEED`; merged-sample mobile tracker bundle deployed)
 - API URL: https://28y0g9h8ki.execute-api.us-east-1.amazonaws.com
 - Stack: pact-dev (us-east-1) — `UPDATE_COMPLETE`; worker fix deployed by `make deploy` on 2026-09-20
 - Bedrock models verified (alias=id): nova-2-lite=us.amazon.nova-2-lite-v1:0; nova-pro=us.amazon.nova-pro-v1:0; both Nova calls pass; Claude remains unverified/omitted and optional, with no Anthropic form submitted
 - Scaffold: validated reference copied; Phase 0 toolchain, setup, baseline, and Nova smoke green; MIT LICENSE and bootstrap commit complete
 - License: MIT; copyright holder confirmed as `Venkata Satya Satvik Viriyala`; task 0.3 commit `3e18dbf5f4ebffcbaad61cdd7f9daefc6823c700`
-- Latest gate: backend 71 passed; frontend 18 passed; Ruff/format/ESLint/TypeScript clean; Cedar 7-row demo, SAM validation, and containerized SAM build passed
+- Latest gate: backend 71 passed; frontend 20 passed; Ruff/format/ESLint/TypeScript clean; Cedar 7-row demo, SAM validation, and containerized SAM build passed
 - Human pass rate (study cohort): — · Best agent pass rate: —
-- Last green commit: 677c6be (`fix(web): continue after mobile sensor pass`)
-- Amplify artifact check: local `frontend/dist` has root `index.html` and `assets/`; live root returned 200 `text/html`, JS returned 200 `text/javascript`, and deployed bundle contains the enable/retry and neutral motion-failure copy
+- Last green commit: 26d6a20 (`fix(web): align mobile tracker with imu samples`)
+- Amplify artifact check: local `frontend/dist` has root `index.html` and `assets/`; live root returned 200 `text/html`, JS returned 200 `text/javascript`, and live `index-KjHyhbDp.js` SHA-256 matched the local asset (`992818c85b2faf9268929554dee62a1cac50585adfe826666f573f7e93426f57`)
 - Frontend environment: production/development files generated from `pact-dev` outputs by `make web-env`
 - Cloud smoke: final `make smoke` passed every listed check, including live `imu-v1` pass/booking/replay/explain,
   orientation spoof rejection, and asynchronous agent queue/poll completion
 - Live evidence: `make imu-demo IMU_API=https://28y0g9h8ki.execute-api.us-east-1.amazonaws.com` rejected all five cheap spoofs and passed only the physics-consistent simulator; `make cedar-demo` showed physical ALLOW, replay/quota DENY
 - IMU tuning: `tiltErrDeg` remains 18°; documented mobile limits now allow median delivery intervals through 200 ms and gyro correlation down to 0.35; client uses server `radius + 2°`/80%-hold slack and a 3 s startup grace; gravity, continuity, fresh targets, binding, replay, and token/Cedar rules are unchanged
-- Frontend refresh: `ARHV Rail` fictional route/date/class/quota flow defaults Bengaluru → Visakhapatnam, lists three fictional services, and contextualises verification as a quick presence check; `/phone` now stays sensor-only with neutral incomplete-signal and sensor-retry states, and three completed rings submit immediately to verified booking; local lint, TypeScript, focused mobile tests (5), and production build passed
+- Frontend refresh: `ARHV Rail` fictional route/date/class/quota flow defaults Bengaluru → Visakhapatnam, lists three fictional services, and contextualises verification as a quick presence check; `/phone` stays sensor-only with neutral incomplete-signal and sensor-retry states, and three completed rings submit immediately from complete merged sensor samples to verified booking; local lint, TypeScript, focused mobile tests (6), and production build passed
 - Local evidence: containerized SAM build passed; canonical local smoke hit the known host DynamoDB 404, then the Docker-network fallback passed health, both proof families, bookings, replay, stats, spoof, and agent-route checks; local IMU table and Cedar demo passed
 - Live evidence: `run_4b9ec1f6c8d3dc2a22f2c43b` returned 202 then `GET` status `done`, progress 3/3, 2/3
   rounds correct, and one presigned frame URL per round at K=1; browser Lab K=4 showed `AI FAILED (0/3)` with
@@ -39,7 +39,7 @@
 ## Next Steps
 - [x] Sprint S0 (15:45–16:05): preflight, Makefile `imu-demo`, green tests, and physical-first augmentation commit
 - [x] Sprint S1 (16:05–17:20): backend integration/local gate and containerized build passed; `make deploy` completed with `pact-dev` `CREATE_COMPLETE` and live API output
-- [x] Sprint S2 (17:20–18:25): frontend local gate passed and Amplify deployment job 12 succeeded with immediate-success sensor-only mobile UX; real-phone check pending
+- [x] Sprint S2 (17:20–18:25): frontend local gate passed and Amplify deployment job 13 succeeded with merged-sample sensor-only mobile UX; real-phone check pending
 - [x] Sprint S3 (18:25–18:50): local/live API evidence, attack table, Cedar demo, Amplify render, and live async Lab passed; human pilot remains
 - [ ] Sprint S4 (18:50–19:45): truthful README/writeup/video draft prepared and pushed; recording, upload, and external submission remain human-blocked
 - [x] Booking-result UX: confirmation route/card, authorization failure state, fresh-challenge retry, focus management, and focused frontend tests
@@ -359,6 +359,15 @@
   and a fresh `/phone?deploy=12` browser snapshot showed only the sensor start/neutral guidance. No physical-phone pass
   is inferred.
 
+- 2026-09-20 19:43–19:45 IST — Fixed the remaining `/phone` transition false negative in `26d6a20`: the tracker now
+  consumes each merged motion+orientation sample once and uses first-trace-relative timing, matching the server
+  verifier. Focused Vitest passed 6, full frontend Vitest passed 20, backend pytest passed 71, `make lint` passed,
+  live smoke and the live IMU spoof table passed, and no server/token/Cedar rule was loosened.
+- 2026-09-20 19:45 IST — Fresh `make web-env && make web-deploy` published Amplify job 13 (`SUCCEED`). The live
+  branch active/latest job is 13; `/phone?deploy=13` rendered; root references `index-KjHyhbDp.js`, whose 200
+  `text/javascript` response has SHA-256 `992818c85b2faf9268929554dee62a1cac50585adfe826666f573f7e93426f57`,
+  identical to local `frontend/dist`. No real-phone pass is inferred.
+
 ## Errors & Fixes
 - 2026-09-19 — `doctor.sh` exited 1 with missing prerequisites → the machine lacks the Phase 0 toolchain → human
   must install the listed tools; verification is pending a second doctor run.
@@ -485,6 +494,9 @@
  - 2026-09-20 19:32 IST — `make lint` initially rejected the new checkpoint test mock because its lowercase function name triggered the React Hooks rule → renamed it `CheckpointDriver`; focused tests, build, lint, and ReadLints then passed.
 
  - 2026-09-20 19:36 IST — Post-deploy `make test` had one unrelated stochastic `backend/tests/test_mdg.py::test_single_frame_carries_no_shape_signal` failure: measured mean `0.2515139560888059` against `< 0.25`; 70 backend tests passed before that failure. No MDG or backend code was changed; live smoke and all focused mobile checks remained green.
+
+- 2026-09-20 19:43–19:45 IST — Diagnosed the remaining production false negative: `TiltChallenge` advanced `TargetTracker` on every animation frame from the latest orientation event, even when no merged `devicemotion` sample had entered the submitted trace; it also timed the client baseline from recorder start while `imu.verify` times it from the first trace sample. The UI could therefore fill ring 3 before the server trace contained that hold, returning `passed:false`/`targets` and showing “Motion signal incomplete.” `26d6a20` makes the tracker consume every complete merged sample once, with timestamps relative to the first submitted sample; server verification, token expiry/single-use, replay, and Cedar controls are unchanged. Focused Vitest passed 6, full frontend Vitest passed 20, backend pytest passed 71, `make lint` passed, live `make smoke SMOKE_ARGS=--no-agent` passed, and live `make imu-demo` rejected all five cheap spoofs while the physics-consistent simulator passed.
+- 2026-09-20 19:45 IST — Fresh `make web-env && make web-deploy` published Amplify job 13 (`SUCCEED`). Branch `main` active job and latest job are both 13; `/phone?deploy=13` loaded in the browser; root references `/assets/index-KjHyhbDp.js`, which returned 200 `text/javascript` and SHA-256 `992818c85b2faf9268929554dee62a1cac50585adfe826666f573f7e93426f57`, identical to local `frontend/dist`. No real-phone pass is inferred; H15 remains human-blocked.
 
 ## Open Issues
 - (none yet)
