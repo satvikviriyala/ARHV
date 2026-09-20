@@ -1,24 +1,33 @@
+import { useState } from "react";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { api } from "../lib/api";
 import type { ImuChallenge, ImuTrace } from "../lib/imu";
+import BookingCard from "./BookingCard";
 import PhysicalWidget from "./PhysicalWidget";
 
 vi.mock("./TiltChallenge", () => ({
-  default: ({ onDone }: { onDone: (trace: ImuTrace) => void }) => (
-    <button
-      type="button"
-      onClick={() =>
-        onDone({
-          challengeId: "ch_0123456789abcdef01234567",
-          nonce: "0123456789abcdef0123456789abcdef",
-          samples: [],
-        })
-      }
-    >
-      Submit sensor trace
-    </button>
-  ),
+  default: function CheckpointDriver({ onDone }: { onDone: (trace: ImuTrace) => void }) {
+    const [completed, setCompleted] = useState(0);
+    return (
+      <button
+        type="button"
+        onClick={() => {
+          if (completed === 2) {
+            onDone({
+              challengeId: "ch_0123456789abcdef01234567",
+              nonce: "0123456789abcdef0123456789abcdef",
+              samples: [],
+            });
+          } else {
+            setCompleted((value) => value + 1);
+          }
+        }}
+      >
+        Complete checkpoint {completed + 1}
+      </button>
+    );
+  },
 }));
 
 const challenge: ImuChallenge = {
@@ -52,7 +61,10 @@ describe("PhysicalWidget mobile sensor path", () => {
 
     render(<PhysicalWidget sensorOnly onVerified={vi.fn()} />);
 
-    fireEvent.click(await screen.findByRole("button", { name: "Submit sensor trace" }));
+    const checkpoint = await screen.findByRole("button", { name: "Complete checkpoint 1" });
+    fireEvent.click(checkpoint);
+    fireEvent.click(screen.getByRole("button", { name: "Complete checkpoint 2" }));
+    fireEvent.click(screen.getByRole("button", { name: "Complete checkpoint 3" }));
 
     const message = await screen.findByText("Motion signal incomplete. Please try the sensors again.");
     expect(message).toBeTruthy();
@@ -63,5 +75,47 @@ describe("PhysicalWidget mobile sensor path", () => {
     await waitFor(() => expect(document.activeElement).toBe(retry));
     fireEvent.click(retry);
     await waitFor(() => expect(api.createChallenge).toHaveBeenCalledTimes(2));
+  });
+
+  it("moves from all three checkpoints directly to verified booking", async () => {
+    const booking = {
+      bookingId: "bk_mobile",
+      pnr: "4821930675",
+      seat: "B2-34",
+      counter: "Rush Hour Counter (demo)",
+      assurance: "physical",
+      policy: "permit-physical-book",
+      createdAt: 1_789_999_999,
+    };
+    vi.spyOn(api, "createChallenge").mockResolvedValue(challenge);
+    vi.spyOn(api, "submitTrace").mockResolvedValue({
+      passed: true,
+      token: "fresh-physical-token",
+      assurance: "physical",
+      proof: "imu-v1",
+      metrics: { targetsReached: 3 },
+    });
+    vi.spyOn(api, "book").mockResolvedValue(booking);
+    const onVerified = vi.fn();
+
+    function MobileFlow() {
+      const [token, setToken] = useState("");
+      return token ? (
+        <BookingCard token={token} onRetry={vi.fn()} />
+      ) : (
+        <PhysicalWidget sensorOnly onVerified={(value) => { onVerified(value); setToken(value); }} />
+      );
+    }
+
+    render(<MobileFlow />);
+
+    fireEvent.click(await screen.findByRole("button", { name: "Complete checkpoint 1" }));
+    fireEvent.click(screen.getByRole("button", { name: "Complete checkpoint 2" }));
+    fireEvent.click(screen.getByRole("button", { name: "Complete checkpoint 3" }));
+
+    await waitFor(() => expect(onVerified).toHaveBeenCalledWith("fresh-physical-token"));
+    expect(await screen.findByText("Journey confirmed")).toBeTruthy();
+    expect(api.book).toHaveBeenCalledWith("fresh-physical-token");
+    expect(screen.queryByText(/suspicious|bot|agent|moving shape|checkpoint/i)).toBeNull();
   });
 });

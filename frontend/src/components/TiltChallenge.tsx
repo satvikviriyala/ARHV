@@ -18,24 +18,47 @@ type Props = {
   challenge: ImuChallenge;
   onDone: (trace: ImuTrace) => void;
   onUnsupported?: () => void;
+  showAlternative?: boolean;
   autoFocus?: boolean;
 };
 
 type Status = "intro" | "denied" | "no-sensors" | "running" | "timeout";
 
-export default function TiltChallenge({ challenge, onDone, onUnsupported, autoFocus = true }: Props) {
+export default function TiltChallenge({
+  challenge,
+  onDone,
+  onUnsupported,
+  showAlternative = false,
+  autoFocus = true,
+}: Props) {
   const [status, setStatus] = useState<Status>("intro");
   const [state, setState] = useState<TrackerState | null>(null);
   const recorder = useRef<ImuRecorder | null>(null);
   const startButton = useRef<HTMLButtonElement>(null);
+  const animationFrame = useRef<number | null>(null);
+  const runId = useRef(0);
+  const completed = useRef(false);
+  const mounted = useRef(true);
 
-  useEffect(() => () => recorder.current?.stop(), []);
+  useEffect(
+    () => () => {
+      mounted.current = false;
+      runId.current += 1;
+      completed.current = true;
+      if (animationFrame.current !== null) cancelAnimationFrame(animationFrame.current);
+      recorder.current?.stop();
+    },
+    [],
+  );
   useEffect(() => {
     if (autoFocus && (status === "intro" || status === "denied")) startButton.current?.focus();
   }, [autoFocus, status]);
 
   async function start() {
+    const currentRun = ++runId.current;
+    completed.current = false;
     const permission = await requestMotionPermission(); // runs inside the tap handler (iOS requirement)
+    if (!mounted.current || currentRun !== runId.current) return;
     if (permission !== "granted") {
       setStatus(permission === "unsupported" ? "no-sensors" : "denied");
       if (permission === "unsupported") onUnsupported?.();
@@ -48,16 +71,18 @@ export default function TiltChallenge({ challenge, onDone, onUnsupported, autoFo
     setStatus("running");
     let lastBuzz = 0;
     const tick = () => {
-      if (!recorder.current) return;
+      if (!mounted.current || currentRun !== runId.current || completed.current || recorder.current !== rec) return;
       const t = rec.elapsedMs();
       if (t > SENSOR_STARTUP_GRACE_MS && !rec.hasMotion()) {
         rec.stop();
+        runId.current += 1;
         setStatus("no-sensors");
         onUnsupported?.();
         return;
       }
       if (t > challenge.maxDurationMs) {
         rec.stop();
+        runId.current += 1;
         setStatus("timeout");
         return;
       }
@@ -70,14 +95,15 @@ export default function TiltChallenge({ challenge, onDone, onUnsupported, autoFo
           navigator.vibrate?.(25); // Android haptic tick; ignored on iOS
         }
         if (s.phase === "done") {
+          completed.current = true;
           rec.stop();
-          window.setTimeout(() => onDone(rec.trace(challenge)), 150); // a few extra samples after the last hold
+          onDone(rec.trace(challenge));
           return;
         }
       }
-      requestAnimationFrame(tick);
+      animationFrame.current = requestAnimationFrame(tick);
     };
-    requestAnimationFrame(tick);
+    animationFrame.current = requestAnimationFrame(tick);
   }
 
   if (status === "intro" || status === "denied" || status === "no-sensors" || status === "timeout") {
@@ -100,7 +126,7 @@ export default function TiltChallenge({ challenge, onDone, onUnsupported, autoFo
             {status === "denied" ? "Enable motion sensors and retry" : "Start physical check"}
           </button>
         )}
-        {status === "denied" && onUnsupported && (
+        {status === "denied" && showAlternative && onUnsupported && (
           <button
             type="button"
             onClick={onUnsupported}

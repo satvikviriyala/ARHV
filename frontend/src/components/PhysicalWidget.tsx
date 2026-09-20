@@ -21,18 +21,29 @@ export default function PhysicalWidget({ cohort = "public", onVerified, onFallba
   const [metrics, setMetrics] = useState<Record<string, unknown>>({});
   const [message, setMessage] = useState("");
   const retryButton = useRef<HTMLButtonElement>(null);
+  const attempt = useRef(0);
+  const activeChallenge = useRef<string | null>(null);
+  const submitting = useRef(false);
+  const verified = useRef(false);
 
   const load = useCallback(async () => {
+    const currentAttempt = ++attempt.current;
+    submitting.current = false;
+    verified.current = false;
+    activeChallenge.current = null;
     setStatus("loading");
     setChallenge(null);
     setReasons([]);
     setMessage("");
     try {
       const result = await api.createChallenge({ family: "imu-v1", cohort });
+      if (currentAttempt !== attempt.current) return;
       if (result.family !== "imu-v1") throw new Error("The physical challenge response was not imu-v1.");
+      activeChallenge.current = result.challengeId;
       setChallenge(result);
       setStatus("tilt");
     } catch (error) {
+      if (currentAttempt !== attempt.current) return;
       setMessage(error instanceof Error ? error.message : "Could not start the physical check.");
       setStatus("error");
     }
@@ -47,18 +58,26 @@ export default function PhysicalWidget({ cohort = "public", onVerified, onFallba
   }, [status]);
 
   async function submit(trace: ImuTrace) {
+    const challengeId = activeChallenge.current;
+    if (verified.current || submitting.current || challengeId !== trace.challengeId) return;
+    submitting.current = true;
     setStatus("submitting");
     try {
       const result = await api.submitTrace(trace.challengeId, trace, cohort);
+      if (challengeId !== activeChallenge.current) return;
       setMetrics(result.metrics ?? {});
       if (result.passed && result.token) {
+        verified.current = true;
         setStatus("passed");
         onVerified(result.token, { assurance: "physical", metrics: result.metrics });
       } else {
+        submitting.current = false;
         setReasons(result.reasons ?? []);
         setStatus("failed");
       }
     } catch (error) {
+      if (challengeId !== activeChallenge.current) return;
+      submitting.current = false;
       setMessage(
         error instanceof ApiError && (error.status === 409 || error.status === 410)
           ? "This check expired. Start a new one."
@@ -153,6 +172,7 @@ export default function PhysicalWidget({ cohort = "public", onVerified, onFallba
               setStatus("error");
             }
           }}
+          showAlternative={!sensorOnly && Boolean(onFallback)}
           autoFocus
         />
       )}
