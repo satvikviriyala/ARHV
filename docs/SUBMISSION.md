@@ -28,8 +28,8 @@ recordings are all rejected by the live API; a physics-perfect simulator still p
 it is exactly the gap vendors must close. (2) A perceptual proof (mdg-v1): a shape visible only in motion; any
 single frame, which is all a screenshot agent sees, is uniform noise. A local-API run of the Strands Agents red
 team on Amazon Bedrock (Nova 2 Lite, K=4) scored 0/20 full puzzles, with 12/60 rounds correct (95% CI
-[0.1183, 0.3178]); no infrastructure-error attempts were counted, and the live human pilot was blocked by the
-undeployed stack. (3) Either proof yields a 120-second single-use token; a Lambda authorizer
+[0.1183, 0.3178]); no infrastructure-error attempts were counted. The deployed asynchronous Lab also completed
+real Nova runs and visibly showed a failed verdict; no human-study count is claimed yet. (3) Either proof yields a 120-second single-use token; a Lambda authorizer
 evaluates Cedar policies (permit-physical-book, permit-motion-book, forbid-token-replay, account quota) before the
 protected action runs. (4) A concrete proposal: navigator.physical.request(), an OS-rendered gesture signed by
 the secure sensor hub / TPM / Secure Enclave and redeemed as a private, unlinkable token, an identity-free
@@ -52,7 +52,7 @@ optical-flow solver can beat the perceptual puzzle. Small-N pilot.
 
 AI tools used. Claude Code (implementation), Claude (research, planning, docs), and Cursor Agent (GPT-5.6 Luna;
 implementation, integration, testing, debugging, and evidence reports). Bedrock models are part of the product
-(the red team), not coding tools. Links: repo · Amplify metadata URL (deployment pending IAM) · video.
+(the red team), not coding tools. Links: repo · live Amplify URL · video.
 ```
 
 ## 3. README template (replace the placeholder README in S3)

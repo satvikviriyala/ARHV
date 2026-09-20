@@ -1,6 +1,6 @@
 # ARHV evaluation report
 
-Generated: 2026-09-20T11:18:34.071910+00:00
+Generated: 2026-09-20T13:03:25.934532+00:00
 
 This report is generated only from recorded JSONL runs. Attempts containing infrastructure errors are excluded from pass and round aggregates.
 
@@ -18,7 +18,9 @@ Family: `mdg-v1`
 
 | Cohort | Attempts | Passes | Pass rate | 95% CI | Round accuracy |
 |---|---:|---:|---:|---|---:|
-| agent:nova-2-lite:k4 | 10 | 0 | 0.0000 | [0.0000, 0.2775] | 0.2667 |
+| public | 25 | 12 | 0.4800 | [0.3003, 0.6650] | 0.5600 |
+| agent:nova-2-lite:k1 | 1 | 0 | 0.0000 | [0.0000, 0.7935] | 0.6667 |
+| agent:nova-2-lite:k4 | 1 | 0 | 0.0000 | [0.0000, 0.7935] | 0.0000 |
 
 ## Limitations
 

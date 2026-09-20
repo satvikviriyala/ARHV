@@ -7,7 +7,8 @@
 Built for the WeMakeDevs × AWS **First Commit** hackathon (#BharatBuilds). Serverless on AWS: Amplify, API Gateway,
 Lambda, DynamoDB, Secrets Manager, Cognito, Amazon Bedrock, with Cedar policies deciding every protected action.
 
-- **Amplify app metadata:** https://main.d1i6xn1rxjcnkk.amplifyapp.com (deployment not verified; CloudFormation deploy is IAM-blocked)
+- **Live demo:** https://main.d1i6xn1rxjcnkk.amplifyapp.com (Amplify deployment job 8 succeeded)
+- **Live API:** https://28y0g9h8ki.execute-api.us-east-1.amazonaws.com (`pact-dev`, updated 20 Sep 2026)
 - **Video (≤ 3 min):** _link added at submission_
 - **The full argument, protocol and proposal:** [`docs/PHYSICAL.md`](docs/PHYSICAL.md)
 
@@ -28,8 +29,8 @@ Lambda, DynamoDB, Secrets Manager, Cognito, Amazon Bedrock, with Cedar policies 
 ## What ARHV does
 | Tier | Proof | Status | Beats | Doesn't beat (yet) |
 |---|---|---|---|---|
-| **T1 physical** | **`imu-v1`: tilt your phone to roll a dot through 3 random rings; the server checks the sensor physics** | **built and locally verified; cloud deploy pending** | screen-only agents, emulated/replayed/scripted sensor streams | a physics-aware simulator (the attestation gap) |
-| T0 perceptual | `mdg-v1`: a shape visible only in motion; any single frame is noise | built and locally verified; cloud deploy pending | screenshot-driven agents | purpose-built optical-flow solvers |
+| **T1 physical** | **`imu-v1`: tilt your phone to roll a dot through 3 random rings; the server checks the sensor physics** | **built and live on AWS** | screen-only agents, emulated/replayed/scripted sensor streams | a physics-aware simulator (the attestation gap) |
+| T0 perceptual | `mdg-v1`: a shape visible only in motion; any single frame is noise | built and live on AWS | screenshot-driven agents | purpose-built optical-flow solvers |
 | T2 vendor-attested | OS-signed physical gesture → private token | proposal ([§7](docs/PHYSICAL.md#7-proposal-vendor-attested-physical-gestures-the-tpm-moment-for-human-verification)) | remote automation and simulators | human farms (quotas handle those) |
 Passing either live proof gives a **120-second, single-use token**. A Lambda authorizer asks **Cedar** whether that
 token may perform the protected action: booking a selected journey at a *fictional* ARHV Rail peak-hour counter.
@@ -69,6 +70,11 @@ fully-informed prompt. Results with 95% confidence intervals: [`eval/report.md`]
 the raw runs in `eval/results/`). The recorded local-API run used Nova 2 Lite with K=4 over 20 valid challenges:
 0/20 full puzzles passed and 12/60 rounds were correct (95% CI [0.1183, 0.3178]); no infrastructure-error attempts
 were counted.
+
+The deployed Lab is asynchronous: `POST /v1/agent-runs` returned `202`, the Bedrock worker completed three
+rounds, and `GET /v1/agent-runs/<runId>` returned `done` with presigned S3 frame URLs and replay data. The live
+smoke run with Nova 2 Lite at K=1 scored 2/3 rounds and did not pass the puzzle; a separate browser Lab run at K=4
+displayed **AI FAILED (0/3)**. These worker demonstrations are separate from the 20-challenge CLI benchmark above.
 
 ## Authorization as policy (Cedar)
 ```

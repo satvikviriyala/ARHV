@@ -1,6 +1,7 @@
 # PHASE 3: Red team → M2 + early submission (budget 4 h · Sun 08:00–12:00 IST)
 
-> **Sun 20 Sep:** reduced by the sprint cut list: run the red team with `make bench` (S3); the Lab page and cloud worker are cut unless time remains.
+> **Sun 20 Sep:** the worker and Lab fit in the remaining sprint window. The terminal benchmark remains the
+> reproducible evaluation path; the deployed Lab is the visible asynchronous demonstration.
 
 **Goal (M2):** from the Lab page, a Strands agent on Amazon Bedrock attacks a fresh puzzle; the page shows "What the
 AI saw" (noise frames) next to "What you see" (animated), the AI's wrong answers and the verdict; the scoreboard
@@ -38,8 +39,8 @@ submit the form (H13). Record "early submission ✓" in Snapshot.
 **3.8 Close.** Tests + lint green · MEMORY · `git tag phase-3-done` · push.
 
 ## Exit gate
-- [ ] **M2** on the live URL: Bedrock run completes, AI frames + live canvas side by side, verdict, scoreboard updates
-- [ ] `make smoke` (with agent step) green · worker + API tests green
+- [x] **M2** on the live URL: Bedrock run completes, AI frames + live canvas side by side, verdict, scoreboard updates
+- [x] `make smoke` (with agent step) green · worker + API tests green
 - [ ] Pilot JSONL committed in `eval/results/` · early submission done (or Human-Blocked with a time)
 
 ## If things go wrong
