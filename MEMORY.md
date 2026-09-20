@@ -11,16 +11,16 @@
 
 ## Snapshot
 - Deadline: Sun 20 Sep 2026 20:00 IST; submit by 19:45 IST
-- Current phase: Sprint S1
+- Current phase: Sprint S2
 - Milestones: M1 human-pass-live [ ] · M2 AI-fails-live [ ] · Early submission [ ] · Final submission [ ]
 - Repo URL: https://github.com/satvikviriyala/ARHV (public; main)
 - Web URL (Amplify): https://main.d1i6xn1rxjcnkk.amplifyapp.com (user-verified metadata for `pact-web`, appId `d1i6xn1rxjcnkk`; live browser testing found the root shell but asset paths serving that shell as `text/html`, and a later fresh navigation returned 401 Basic-auth, so this remains an unverified live-success claim)
 - API URL: —
-- Stack: pact-dev (us-east-1) — not deployed
+- Stack: pact-dev (us-east-1) — not deployed; `cloudformation:CreateChangeSet` denied for `liv28`
 - Bedrock models verified (alias=id): nova-2-lite=us.amazon.nova-2-lite-v1:0; nova-pro=us.amazon.nova-pro-v1:0; both Nova calls pass; Claude remains unverified/omitted and optional, with no Anthropic form submitted
 - Scaffold: validated reference copied; Phase 0 toolchain, setup, baseline, and Nova smoke green; MIT LICENSE and bootstrap commit complete
 - License: MIT; copyright holder confirmed as `Venkata Satya Satvik Viriyala`; task 0.3 commit `3e18dbf5f4ebffcbaad61cdd7f9daefc6823c700`
-- Baseline: backend 65 passed; ruff/format/eslint/tsc clean; frontend build plus 2 tests passed; Cedar 6-row demo and SAM validation passed
+- Baseline: backend 65 passed; ruff/format/eslint/tsc clean; frontend build plus 2 tests passed; Cedar 6-row demo, SAM validation, and containerized SAM build passed
 - Human pass rate (study cohort): — · Best agent pass rate: —
 - Last green commit: 9f8a6ed (`feat(api): integrate imu-v1 verification backend`)
 - Amplify artifact check: local `frontend/dist` has root `index.html` and `assets/`; a locally verified zip built from `dist` has those entries at its root; the live deployment remains unverified
@@ -28,7 +28,7 @@
 
 ## Next Steps
 - [x] Sprint S0 (15:45–16:05): preflight, Makefile `imu-demo`, green tests, and physical-first augmentation commit
-- [ ] Sprint S1 (16:05–17:20): backend integration/local gate passed; deploy and smoke test pending
+- [ ] Sprint S1 (16:05–17:20): backend integration/local gate and containerized build passed; deploy/cloud smoke blocked by H0
 - [ ] Sprint S2 (17:20–18:25): frontend physical and motion paths, Amplify deploy, and real-phone test
 - [ ] Sprint S3 (18:25–18:50): live evidence, attack table, Cedar demo, report, and pilot
 - [ ] Sprint S4 (18:50–19:45): video, writeup, public repo, and submission
@@ -181,6 +181,11 @@
   errors. Implemented utilities, DynamoDB store, stats, API handlers for mdg-v1/imu-v1, authorizer, booking,
   account exchange, worker stub, and smoke script. Committed as `9f8a6ed` (`feat(api): integrate imu-v1
   verification backend`); deploy and cloud smoke remain.
+- 2026-09-20 16:46 IST — `make build` first hit the stopped Docker daemon; after starting Docker Desktop,
+  the retry completed with `Build Succeeded` for the arm64 layer and all six functions. `make deploy` rebuilt
+  from cache but failed before creating the stack: `AccessDenied` for `cloudformation:CreateChangeSet` on
+  `aws-sam-cli-managed-default`. No AWS mutation or retry was attempted; S1 cloud acceptance is blocked by H0,
+  and the local/S2 fallback is active.
 
 ## Errors & Fixes
 - 2026-09-19 — `doctor.sh` exited 1 with missing prerequisites → the machine lacks the Phase 0 toolchain → human
@@ -235,6 +240,13 @@
   65 tests.
 - 2026-09-20 16:04 IST — `make lint` first reported six import-order/unused-import diagnostics → applied Ruff's
   minimal import fixes and formatter. Verification: `make lint` passed with 48 files formatted.
+- 2026-09-20 16:43 IST — `make build` exited because SAM's container build could not connect to Docker
+  (`docker.sock` absent) → Docker Desktop was not running → started Docker Desktop and retried. Verification:
+  `docker info` reported server 29.8.0 and the second `make build` passed.
+- 2026-09-20 16:46 IST — `make deploy` failed during SAM managed-resource setup with
+  `AccessDenied ... cloudformation:CreateChangeSet` for `liv28` → the IAM principal lacks CloudFormation deploy
+  permission → stopped after the definitive authorization diagnosis; no IAM edit, stack deletion, or destructive
+  fallback was attempted. The exact H0 AdministratorAccess step remains the required human action.
 
 ## Open Issues
 - (none yet)
