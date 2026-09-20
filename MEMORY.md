@@ -11,7 +11,7 @@
 
 ## Snapshot
 - Deadline: Sun 20 Sep 2026 20:00 IST; submit by 19:45 IST
-- Current phase: Sprint S3
+- Current phase: Sprint S4
 - Milestones: M1 human-pass-live [ ] · M2 AI-fails-live [ ] · Early submission [ ] · Final submission [ ]
 - Repo URL: https://github.com/satvikviriyala/ARHV (public; main)
 - Web URL (Amplify): https://main.d1i6xn1rxjcnkk.amplifyapp.com (user-verified metadata for `pact-web`, appId `d1i6xn1rxjcnkk`; live browser testing found the root shell but asset paths serving that shell as `text/html`, and a later fresh navigation returned 401 Basic-auth, so this remains an unverified live-success claim)
@@ -30,13 +30,15 @@
 - [x] Sprint S0 (15:45–16:05): preflight, Makefile `imu-demo`, green tests, and physical-first augmentation commit
 - [ ] Sprint S1 (16:05–17:20): backend integration/local gate and containerized build passed; deploy/cloud smoke blocked by H0
 - [ ] Sprint S2 (17:20–18:25): frontend physical and motion paths/local gate passed; Amplify deploy and real-phone test blocked by H0
-- [ ] Sprint S3 (18:25–18:50): live evidence, attack table, Cedar demo, report, and pilot
+- [ ] Sprint S3 (18:25–18:50): local evidence, attack table, Cedar demo, and report passed; live evidence and human pilot blocked by H0
 - [ ] Sprint S4 (18:50–19:45): video, writeup, public repo, and submission
 - [x] Prior Phase 0 toolchain, baseline, Bedrock preflight, license, and public GitHub remote
 - [ ] Prior Phase 0 Amplify public deployment and budget-alarm verification follow-ups
 
 ## Human-Blocked
 - 2026-09-20 15:56 IST — H0: safe read-only checks show the current `liv28` principal is not AdministratorAccess-capable (`iam:ListAttachedUserPolicies`, `iam:ListGroupsForUser`, `amplify:ListApps`, and `budgets:ViewBudget` are denied). Console (root/admin) → IAM → Users → `liv28` → Add permissions → Attach policies directly → **AdministratorAccess** → Add. Then run `aws sts get-caller-identity`. No IAM change was made by the agent.
+- 2026-09-20 — H15: real-phone tilt verification on the public Amplify URL is not executable because `pact-dev` was not deployed; after H0, open the Amplify HTTPS URL on an iPhone Safari/Android Chrome, allow motion access, pass three times, and report the DevPanel metrics/reasons.
+- 2026-09-20 — H16: the three-person study pilot is not executable without the public Amplify URL; after H0/H15, send `https://main.d1i6xn1rxjcnkk.amplifyapp.com/phone?cohort=study` and the laptop `/?cohort=study`, then record exact first-try counts.
 - 2026-09-19 — [RESOLVED] H1: the user confirmed the exact deadline as “Sunday, September 20, 2026 at 8:00 PM IST.”
   PLAN’s “Deadline ≥ Sun 18:00” rule therefore applies: merge Phases 4 and 5 into 2 hours and target the video
   at T-4h (16:00 IST).
@@ -196,6 +198,11 @@
   Cursor's listener on `127.0.0.1:8000`, so the table was bootstrapped through the `pact-local` Docker network.
   The smoke script's `PACT_SMOKE_DDB_ENDPOINT` override then enabled a full local run: all health, mdg, Cedar
   booking/replay, stats, imu pass/booking/replay, and orientation-spoof checks were `OK`.
+- 2026-09-20 17:18 IST — S3 evidence completed locally: `API=http://127.0.0.1:3000 make bench BACKEND=bedrock
+  MODEL=nova-2-lite K=4 N=10` ran twice with 20 valid attempts total, 0/20 full passes, 12/60 correct rounds,
+  0 invalid rounds, and 0 infrastructure-error attempts; `make imu-demo IMU_API=http://127.0.0.1:3000`,
+  `make cedar-demo`, and `API=http://127.0.0.1:3000 make report` all completed. Report and raw JSONL are in
+  `eval/`; commit `911085b` (`feat(eval): record Bedrock red-team evidence`).
 
 ## Errors & Fixes
 - 2026-09-19 — `doctor.sh` exited 1 with missing prerequisites → the machine lacks the Phase 0 toolchain → human
@@ -272,6 +279,13 @@
   404 because Cursor owns host `127.0.0.1:8000` while Docker publishes DynamoDB there → confirmed the container
   healthy and bootstrapped `pact-local` through a one-shot container on the `pact-local` network; local smoke
   then passed. No AWS resource was touched.
+- 2026-09-20 17:20 IST — S3 Ruff gate initially found import ordering and S310 URL-audit diagnostics in
+  `redteam/bench.py` and `redteam/report.py` → sorted imports, validated URLs as http/https, and retained
+  narrowly scoped S310 annotations only on those validated requests. Verification: `make lint` passed.
+- 2026-09-20 17:12 IST — `eval/report.md` initially collapsed all stats cohorts to `public` → stats items omitted
+  the cohort attribute → added the attribute to the DynamoDB `SET` expression and regression coverage, reset only
+  the in-memory local table, reran the two N=10 Bedrock cohorts, and regenerated the report. Verification:
+  `make test-backend` passed 65, `make lint` passed, and `eval/report.md` now records the agent cohort.
 
 ## Open Issues
 - (none yet)
@@ -279,3 +293,4 @@
 ## Metrics (only real runs; cite source)
 | Cohort | Attempts | Passes | Pass rate | 95% CI | Round acc. | Source (command / file / date) |
 |---|---|---|---|---|---|---|
+| agent:nova-2-lite:k4 | 20 | 0 | 0.0000 | [0.0000, 0.1611] | 0.2000 | `eval/report.md`, local API Bedrock runs, 2026-09-20 |
