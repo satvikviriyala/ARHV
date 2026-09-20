@@ -23,7 +23,7 @@ LOCAL_ENV := env.local.json
 endif
 
 .PHONY: help doctor setup test test-backend test-frontend lint fmt build deploy web-env web-bootstrap web-deploy \
-        smoke local-up local-down local-api local-smoke cedar-demo shapes viz bench report logs
+        smoke local-up local-down local-api local-smoke cedar-demo imu-demo shapes viz bench report logs
 
 help: ## List targets
 	@grep -E '^[a-zA-Z0-9_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2}'
@@ -88,6 +88,9 @@ local-smoke: ## Smoke test against sam local
 
 cedar-demo: ## Print the Cedar decision table (offline)
 	$(BIN)/python scripts/cedar_demo.py
+
+imu-demo: ## Phone-tilt (imu-v1) attack table: offline, or against the API with IMU_API=<url>
+	$(BIN)/python scripts/imu_attack_demo.py $(if $(IMU_API),--api $(IMU_API),)
 
 shapes: ## Regenerate frontend/src/lib/shapes.ts from the generator geometry
 	$(BIN)/python scripts/gen_shapes_ts.py backend/layers/core/pact_core frontend/src/lib/shapes.ts

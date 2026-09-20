@@ -1,5 +1,7 @@
 # PHASE 5: Evaluation + polish (budget 3.5 h · Sun 15:00–18:30 IST)
 
+> **Sun 20 Sep:** reduced to sprint block **S3** (bench run, live spoof table, 3-person pilot, README).
+
 **Goal:** real numbers with confidence intervals, a UI that wins "Best UI", a README a judge understands in 60 s,
 and a hardened deployment.
 **Read first:** `docs/EVALUATION.md`, `docs/REDTEAM_AGENT.md §6–8`, `docs/SECURITY.md`, `docs/SUBMISSION.md §3`,

@@ -1,5 +1,7 @@
 # PHASE 6: Demo video + submission (budget 4 h · Sun 18:30–22:30 IST; buffer to 23:59)
 
+> **Sun 20 Sep:** sprint block **S4**, using the physical-first script in `docs/DEMO_VIDEO.md`; submit by 19:45 IST.
+
 **Goal:** a ≤ 3:00 YouTube video that shows every claim running on AWS, a sharp writeup, the blog, and a confirmed
 submission well before the deadline.
 **Read first:** `docs/DEMO_VIDEO.md`, `docs/SUBMISSION.md`, `docs/CONTEXT.md §5`.

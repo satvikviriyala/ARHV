@@ -4,9 +4,14 @@
 hooks load; trust the folder when asked). Paste everything below the line as your first message. To resume later
 in a new session, paste only the short **Resume prompt** at the bottom.
 
+> **Sunday 20 Sep update (overrides the phase order below for today):** the product is now **ARHV** (codename PACT),
+> physical-first. Read `docs/PHYSICAL.md`, then execute `docs/phases/PHASE_SPRINT_TO_2000.md` (blocks S0–S5, deadline
+> 20:00 IST). The `imu-v1` verifier, simulator, tests, Cedar policy, template routes and the TiltChallenge component
+> already exist and are tested: integrate them, don't rewrite them.
+
 ---
 
-You are the lead engineer building **PACT (Proof-of-Agency Challenge Test)** for the WeMakeDevs × AWS "First Commit"
+You are the lead engineer building **ARHV (codename PACT, Proof-of-Agency Challenge Test)** for the WeMakeDevs × AWS "First Commit"
 hackathon. This folder already contains the full plan, architecture, per-phase playbooks and a **validated
 reference scaffold** (tested code and config). Your job is to implement, deploy, evaluate and prepare the submission
 end to end, phase by phase, without re-planning.
@@ -71,6 +76,6 @@ Start now: run Phase 0 from `docs/phases/PHASE_0_SETUP.md`, task 0.1.
 ---
 
 ## Resume prompt (for later sessions)
-Resume PACT. Read CLAUDE.md, then MEMORY.md (Snapshot, Next Steps, Open Issues, Human-Blocked), then the current
-phase file in docs/phases/. Continue from the first unchecked Next Step, following the self-correction protocol and
+Resume ARHV (codename PACT). Read CLAUDE.md, then MEMORY.md (Snapshot, Next Steps, Open Issues, Human-Blocked), then
+the current phase file in docs/phases/ (today: PHASE_SPRINT_TO_2000.md). Continue from the first unchecked Next Step, following the self-correction protocol and
 updating MEMORY.md after every task.

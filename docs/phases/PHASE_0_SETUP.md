@@ -1,5 +1,7 @@
 # PHASE 0: Setup & preflight (budget 1 h · Sat 16:00–17:00 IST)
 
+> **Sun 20 Sep:** close this phase in sprint block **S0** (`PHASE_SPRINT_TO_2000.md`): IAM fix, Amplify basic auth off, `imu-demo` target.
+
 **Goal:** a working repo with the validated scaffold in place, green baseline tests, confirmed AWS + Bedrock access,
 the Amplify URL known (for CORS), and the repo pushed. Nothing is deployed yet.
 **Read first:** `CLAUDE.md`, `PLAN.md`, `docs/reference/README.md`, `docs/AWS_INFRA.md §1–2, §5, §7`,

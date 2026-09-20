@@ -10,7 +10,8 @@ fine. If a future `npm install` errors with ERESOLVE, use `npm install --legacy-
 ## 1. Routes and pages (React Router 8: `createBrowserRouter` + `RouterProvider` from `react-router`)
 | Route | Page | Purpose |
 |---|---|---|
-| `/` | `Home` | Hero + **Rush Hour Counter (demo)**: book the last seat → PACT widget → booking card; scoreboard strip |
+| `/` | `Home` | Thesis hero + **Rush Hour Counter (demo)**: book the last seat → **VerifyChooser** (phone tilt · motion puzzle) → booking card; scoreboard strip |
+| `/phone` | `Phone` | Mobile-first physical check (`imu-v1`) → booking card; handoff mode with `?h=&k=` (stretch) |
 | `/lab` | `Lab` | Red-team lab: pick model + frames → run → "What the AI saw" → verdict; full scoreboard |
 | `/about` | `About` | How it works, screenshot-vs-motion figure, architecture, Cedar policies, limitations, accessibility, credits, AI tools |
 | `/account` | `AccountVerify` (**lazy**) | Cognito Authenticator → account token → back to booking (Phase 4) |
@@ -25,19 +26,23 @@ frontend/src/
   config.ts              reads + validates VITE_* (throws a readable error screen if missing)
   lib/api.ts             typed client (all routes in docs/API.md), ApiError, 20 s timeout via AbortController
   lib/mdg.ts             decodeFrames, pingPongIndex (scaffold, tested)
+  lib/imu.ts             requestMotionPermission, ImuRecorder, TargetTracker, types (exists, tested)
   lib/shapes.ts          GENERATED icons (scaffold; regenerate with `make shapes`)
   lib/cohort.ts          read ?cohort=, persist in sessionStorage, getCohort()
   lib/jwt.ts             decodePayload(token) for display only (no verification in the browser)
   lib/format.ts          pct(), ci(), ms()
   components/MdgCanvas.tsx        the player (§3)
   components/ShapeOptions.tsx     6 icon buttons, keys 1–6
-  components/PactWidget.tsx       state machine (§4); props: onVerified(token), cohort
+  components/PactWidget.tsx       motion-puzzle state machine (§4); props: onVerified(token), cohort
+  components/TiltChallenge.tsx    tilt UI, marble on a plate (exists; §13)
+  components/PhysicalWidget.tsx   imu-v1 state machine (§13); props: onVerified(token), cohort, handoff?
+  components/VerifyChooser.tsx    picks the proof (§13); QR to /phone on laptops
   components/BookingCard.tsx      counter UI + booking result
   components/DevPanel.tsx         token claims, Cedar explain, last API calls (collapsible)
   components/Scoreboard.tsx       humans vs agents with CIs + chance line
   components/AgentRunView.tsx     run progress, frames the AI saw, answers vs truth
   components/Layout.tsx, Header.tsx, Footer.tsx
-  pages/Home.tsx, Lab.tsx, About.tsx, AccountVerify.tsx
+  pages/Home.tsx, Phone.tsx, Lab.tsx, About.tsx, AccountVerify.tsx   (Lab/About/Account: cut list today)
   test/ (colocated *.test.ts[x] also fine)
 ```
 
@@ -76,18 +81,27 @@ expired (410) / already_answered (409) → error with "Get a new puzzle"
 - `aria-live="polite"` region announces the round and results. Focus moves to the first option on each round.
 
 ## 5. Home (`/`): the story in one screen
-- Hero: **"Prove you're human, in a way today's AI agents can't fake."** Sub: "PACT hides a shape in moving dots.
-  You see it instantly. A screenshot shows only noise, and screenshots are all an AI agent has."
-  CTAs: **Try the demo** (scrolls to the counter) · **Watch an AI try** (→ /lab).
+- Brand: **ARHV** wordmark (text, no logo) + "Agent-Resistant Human Verification". Codename PACT appears nowhere
+  in the UI.
+- Hero: **"Agents can read any screen. They can't tilt your phone."** Sub: "ARHV checks that a person physically
+  moved a real device, just now, for this request. Screen puzzles are a race AI agents are winning; physical
+  proof is where verification has to go, and phone makers can make it unforgeable."
+  CTAs: **Try it on your phone** (on laptops: shows the QR to `/phone`) · **Book the last seat** (scrolls to the counter).
 - **Rush Hour Counter (demo)** card: "10:00:00 IST · Tatkal-style rush · 1 seat left" (clearly labelled *fictional
-  demo*; no real brands). Button **Book the last seat** → modal with `PactWidget` → on verified →
-  `api.book(token)` → `BookingCard` shows PNR, seat, "Allowed by Cedar policy `permit-motion-book`".
-  Link under the button: *Can't use motion puzzles? Verify with your account →* (`/account`).
-- `DevPanel` (toggle "Show what AWS decided"): decoded token claims (`asr`, `exp`, `jti`), then `api.explain(token)`
-  after booking → shows `DENY · forbid-token-replay` ("the same token can't be used twice"), and the last 5 API calls
-  (method, path, status, ms). This panel is a video beat.
-- Scoreboard strip: "Humans (study): 96% [CI] · Best AI agent: 0% [CI] · Chance: 0.46%" (from `/v1/stats`; hide a
-  cohort with N = 0).
+  demo*; no real brands). Button **Book the last seat** → modal with **VerifyChooser** (§13) → on verified →
+  `api.book(token)` → `BookingCard` shows PNR, seat, and "Allowed by Cedar policy `permit-physical-book`" (or
+  `permit-motion-book`), plus the proof used ("Physical proof · phone tilt" / "Perceptual proof · motion puzzle").
+  Link under the button: *Can't use either? Verify with your account →* (`/account`, cut today: show the link only
+  if the page exists).
+- `DevPanel` (toggle "Show what AWS decided"): decoded token claims (`asr`, `prf`, `exp`, `jti`), the imu verifier
+  `metrics` (tilt error °, gyro correlation, gravity fraction, samples, duration) when present, then
+  `api.explain(token)` after booking → `DENY · forbid-token-replay` ("the same token can't be used twice"), and
+  the last 5 API calls (method, path, status, ms). This panel is a video beat.
+- "Three tiers" strip (static, 3 cards): **Perceptual** (motion puzzle, today's agents fail, not future-proof) ·
+  **Physical** (phone tilt, built, unattested: simulators can pass) · **Vendor-attested** (the proposal: OS-signed
+  gesture proofs, private tokens). Link to the README/PHYSICAL doc on GitHub.
+- Scoreboard strip: "Humans (study): x/y · Best AI agent: x/y [CI] · Chance: 0.46%" (from `/v1/stats`; hide a cohort
+  with N = 0; exact counts, no rounding up).
 
 ## 6. Lab (`/lab`)
 - Controls: model select populated from `GET /v1/health › agentModels` (display names: `nova-2-lite` → "Amazon Nova 2 Lite",
@@ -142,3 +156,47 @@ token in memory (React context) → navigate to `/` with state `{ token }` → b
 ## 12. Frontend tests (Vitest)
 Keep `lib/mdg.test.ts` (scaffold). Add: `cohort.test.ts` (query → storage → header), `api.test.ts` (error mapping with a
 mocked `fetch`), `PactWidget.test.tsx` (renders loading → round 1 with a stubbed client; keys 1–6 select; submits 3 answers).
+
+## 13. Physical path (`imu-v1`): VerifyChooser, PhysicalWidget, `/phone`
+**Existing, tested code (don't rewrite):** `lib/imu.ts` and `components/TiltChallenge.tsx`
+(`<TiltChallenge challenge onDone={(trace) => …} onUnsupported={() => …} />`). TiltChallenge requests motion
+permission **inside the tap handler** (iOS 13+ requires both `DeviceMotionEvent.requestPermission()` and
+`DeviceOrientationEvent.requestPermission()` from a user gesture), records ~60 Hz samples, guides the dot into 3
+rings, vibrates on each ring, and calls `onDone(trace)`; it never decides pass/fail.
+
+**`VerifyChooser`** (modal body). `canTilt = typeof DeviceMotionEvent !== "undefined" &&
+matchMedia("(pointer: coarse)").matches`.
+- `canTilt` → first card **"Tilt your phone"** (physical proof, recommended), second **"Spot the shape"** (motion puzzle).
+- otherwise → first **"Spot the shape"**, second **"Use your phone instead"**: a QR (`qrcode` npm,
+  `QRCode.toDataURL(url, {margin: 1, width: 220})`) of `${location.origin}/phone` (+ `?cohort=` if set) with the
+  caption "Scan with your phone camera. Tilting a real phone is something a screen-only AI can't do."
+  Stretch (S5): the QR carries a handoff (`/phone?h=<handoffId>&k=<phoneKey>`) and the laptop polls
+  `GET /v1/handoffs/{id}` every 1.5 s, then continues to booking with the delivered token.
+**`PhysicalWidget` state machine**
+```
+idle ─start→ loading (POST /v1/challenges {family:"imu-v1"}) ─ok→ tilt (TiltChallenge) ─onDone→ submitting
+submitting ─200 passed→ passed(token, metrics) → onVerified(token)
+submitting ─200 failed→ failed(reasons, metrics) ─"Try again"→ loading (new challenge; old one is consumed)
+any 409/410 → error("This check expired. Start a new one.") ; network → error(retry)
+onUnsupported / permission denied → fallback card: "Motion sensors aren't available here" + "Spot the shape instead"
+```
+Failure copy (map `reasons`, most specific first):
+| reasons contain | Message |
+|---|---|
+| `targets` | "You didn't reach all three rings in order. Try again: hold the dot inside each ring until it fills." |
+| `timing` | "That took too long or the sensor stream stalled. Try again and keep the page open." |
+| `gravity`, `tilt`, `gyro`, `continuity` | "Your device's sensors didn't behave like a phone moving in a hand. If you're emulating sensors, that's exactly what we check." |
+| `binding`, `size`, `format` | "Something went wrong with this check. Start a new one." |
+Show the `metrics` only in the DevPanel (not in the main card).
+
+**`/phone` page** (`pages/Phone.tsx`, mobile-first, ≤ 360×640 without scrolling during the tilt):
+counter summary → PhysicalWidget → `api.book(token)` → BookingCard (+ DevPanel toggle). Handoff mode (`?h=&k=`,
+S5): the widget sends `{family: "imu-v1", handoffId, phoneKey}` and, on pass, shows **"Done. Return to your
+computer."** with no booking on the phone.
+**Platform notes:** sensors need HTTPS (Amplify URL; never plain `http://` LAN URLs). iOS: if the user taps
+"Don't Allow", Safari may not ask again for this site until it's restarted, so show the motion-puzzle fallback.
+Android Chrome streams without a prompt. In-app browsers (WhatsApp/Instagram) may block sensors: show "Open in
+Chrome/Safari". Keep the page in portrait (the dot uses device axes).
+**Tests (Vitest):** keep `lib/imu.test.ts`; add `reasons.test.ts` (reasons → message mapping, most specific first)
+and, if time, `PhysicalWidget.test.tsx` with a stubbed API and a stubbed `TiltChallenge` that calls `onDone`.
+**Dependency:** `npm install qrcode @types/qrcode` (log it in `MEMORY.md › Decisions`).

@@ -24,6 +24,9 @@ TOKEN_TTL_S = 120                # mirrors tokens.TTL_SECONDS
 RECORD_TTL_S = 7 * 24 * 3600     # retention for challenges/runs/bookings
 ACCOUNT_DAILY_QUOTA = 2          # must match the Cedar policy literal
 AGENT_FRAME_CHOICES = (1, 4, 8)
+FAMILIES = ("mdg-v1", "imu-v1")   # proof families accepted by POST /v1/challenges
+TRACE_MAX_BYTES = 512_000        # raw request body limit for imu-v1 answers
+HANDOFF_TTL_S = 300              # laptop → phone handoff lifetime (stretch)
 def table_name() -> str: return os.environ["TABLE_NAME"]
 def ddb_endpoint() -> str | None: return os.environ.get("PACT_DDB_ENDPOINT") or None
 def agent_aliases() -> dict[str, str]  # parse AGENT_MODELS "a=id,b=id" (same parser as pact_agent.models)
@@ -31,24 +34,30 @@ def agent_runs_daily_cap() -> int     # int(AGENT_RUNS_DAILY_CAP or 300)
 ```
 ### `ids.py`
 `new_id(prefix) -> f"{prefix}_{secrets.token_hex(12)}"`; `new_visitor() -> f"v_{secrets.token_hex(8)}"` (anonymous `sub` for motion tokens).
-Regexes: `CHALLENGE_ID_RE = r"^ch_[0-9a-f]{24}$"`, `RUN_ID_RE = r"^run_[0-9a-f]{24}$"`.
+Regexes: `CHALLENGE_ID_RE = r"^ch_[0-9a-f]{24}$"`, `RUN_ID_RE = r"^run_[0-9a-f]{24}$"`, `HANDOFF_ID_RE = r"^ho_[0-9a-f]{24}$"`,
+`KEY_RE = r"^[0-9a-f]{32}$"` (handoff keys = `secrets.token_hex(16)`; store `hashlib.sha256(key).hexdigest()` only).
 `COHORT_RE = r"^(public|study|local|agent:[a-z0-9.-]{1,40}:k[0-9]{1,2})$"`. `sanitize_cohort(v) -> str`
 lower-cases, maps invalid values to `public`.
 ### `keys.py`
 `token_secret() -> str`: if `PACT_TOKEN_SECRET` is set, return it (local only). Otherwise
 `secretsmanager.get_secret_value(SecretId=os.environ["TOKEN_SECRET_ARN"])["SecretString"]`, cached for the container.
-### `mdg.py`, `png.py`, `tokens.py`
-Copy from the reference scaffold unchanged (tested). Public API: `mdg.generate_challenge(seed, rounds=3, frames=36)`,
+### `mdg.py`, `imu.py`, `png.py`, `tokens.py`
+Already in the repo and tested; don't rewrite. Public API: `mdg.generate_challenge(seed, rounds=3, frames=36)`,
 `mdg.decode_frames(b64)`, `mdg.check_answers(expected, submitted) -> (passed, correct)`, `mdg.FAMILY`;
-`png.render_frame_png(points, scale=3) -> bytes`; `tokens.mint(secret, sub=, assurance=, challenge_id=, now=)`,
-`tokens.verify(secret, token) -> claims` (raises `jwt.PyJWTError`).
+`imu.generate_challenge(seed) -> dict` (all public: family, nonce, targets, baselineMs, maxDurationMs, sampleHz),
+`imu.verify(challenge, challenge_id, trace) -> ImuResult(passed: bool, reasons: list[str], metrics: dict)`,
+`imu.FAMILY = "imu-v1"`, `imu.N_TARGETS = 3` (rules: `docs/PHYSICAL.md §3`);
+`png.render_frame_png(points, scale=3) -> bytes`; `tokens.mint(secret, sub=, assurance=, challenge_id=, proof=, now=)`
+(`assurance` ∈ `motion|physical|account`; `proof` → claim `prf`), `tokens.verify(secret, token) -> claims`
+(raises `jwt.PyJWTError`).
 ### `store.py` (single table; see docs/DATA_MODEL.md for exact items)
 ```python
 class ChallengeNotFound(Exception): ...
 class ChallengeExpired(Exception): ...
 class ChallengeAlreadyUsed(Exception): ...
 
-def put_challenge(challenge_id, *, seed_hex, answers, cohort, family, now, expires_at) -> None
+def put_challenge(challenge_id, *, seed_hex, cohort, family, now, expires_at, answers=None, handoff_id=None) -> None
+    # imu-v1 stores no answers: the server re-derives the challenge from seedHex at verification time
 def consume_challenge(challenge_id, *, now) -> dict
     # UpdateItem SET #s=:answered, answeredAt=:now
     # Condition: attribute_exists(PK) AND #s = :issued AND expiresAt >= :now ; ReturnValues=ALL_NEW
@@ -66,6 +75,16 @@ def take_agent_run_slot(*, cap, now) -> bool  # UpdateItem LIMIT#agent-runs/<dat
 def create_run(run: dict) -> None
 def update_run(run_id, **fields) -> None      # SET for each field (names via ExpressionAttributeNames)
 def get_run(run_id) -> dict | None
+# Handoff (stretch, S5). Item HO#<id>/META; see docs/DATA_MODEL.md
+def create_handoff(handoff_id, *, poll_key_hash, phone_key_hash, now, expires_at) -> None
+def check_handoff_phone(handoff_id, *, phone_key_hash, now) -> None   # raises HandoffNotFound / HandoffExpired
+def verify_handoff(handoff_id, *, phone_key_hash, token, challenge_id, now) -> bool
+    # UpdateItem SET #s=:verified, #tok=:t, challengeId=:c, verifiedAt=:now
+    # Condition: #s = :pending AND phoneKeyHash = :pk AND expiresAt >= :now
+def deliver_handoff(handoff_id, *, poll_key_hash, now) -> dict | None
+    # UpdateItem SET #s=:delivered, deliveredAt=:now REMOVE #tok, Condition #s = :verified AND pollKeyHash = :h,
+    # ReturnValues=ALL_OLD → the old item carries the token (returned exactly once)
+def get_handoff(handoff_id) -> dict | None
 ```
 Numbers come back from DynamoDB as `Decimal`: convert to `int`/`float` before JSON (`http.ok` handles it).
 ### `stats.py`
@@ -95,21 +114,41 @@ fields. Helper: `log_event(name, **fields)` → `logger.info(name, extra={"event
 ## 3. Handlers
 ### `functions/api/app.py` — `handler(event, context)`
 Routes (see docs/API.md): `GET /v1/health`, `POST /v1/challenges`, `POST /v1/challenges/{challengeId}/answers`,
-`GET /v1/stats`, `POST /v1/agent-runs`, `GET /v1/agent-runs/{runId}`. Dispatch with `http.match_route`; wrap in
+`GET /v1/stats`, `POST /v1/agent-runs`, `GET /v1/agent-runs/{runId}`, `POST /v1/handoffs`, `GET /v1/handoffs/{handoffId}`. Dispatch with `http.match_route`; wrap in
 `try: … except ApiError as e: return http.error(...) except Exception: log.exception; return http.error(500, "internal", …)`.
-- **create_challenge:** cohort = `sanitize_cohort(header x-pact-cohort or body.cohort)`; `seed = secrets.token_bytes(32)`;
+- **create_challenge:** `cohort = sanitize_cohort(header x-pact-cohort or body.cohort)` for every family, then branch
+  on `family = body.get("family") or "mdg-v1"` (not in `config.FAMILIES` → 400 `bad_family`). **`imu-v1`:** `cid = ids.new_id("ch")`; `seed = secrets.token_bytes(32)`; `ch = imu.generate_challenge(seed)`; if
+  `handoffId`/`phoneKey` present (S5) → `store.check_handoff_phone(...)` (404 `handoff_not_found` / 410
+  `handoff_expired`); `store.put_challenge(cid, seed_hex=seed.hex(), cohort, family="imu-v1", now, expires_at,
+  handoff_id=…)` with `expires_at = now + CHALLENGE_TTL_S`; log `challenge_created` (cid, cohort, family); return
+  **201** `{"challengeId": cid, "expiresAt", **ch}`.
+  **`mdg-v1`** (default): `seed = secrets.token_bytes(32)`;
   `ch = mdg.generate_challenge(seed)`; `cid = ids.new_id("ch")`; `store.put_challenge(cid, seed_hex=seed.hex(),
   answers=ch["answers"], cohort, family, now, expires_at=now+CHALLENGE_TTL_S)`; log `challenge_created`
   (cid, cohort); return **201** `{"challengeId": cid, "expiresAt": …, **ch["public"]}`.
-- **answer_challenge:** validate `challengeId` (regex) and body `answers` (list of 3 strings ≤ 16 chars);
+- **answer_challenge** dispatch: body has `trace` → imu path; body has `answers` → mdg path; after consuming, if
+  `rec["family"]` doesn't match the body type → 400 `wrong_family` (the challenge stays consumed).
+- **answer_challenge (`imu-v1`)**: reject raw bodies > `TRACE_MAX_BYTES` (400 `too_large`) before parsing; body
+  must contain a `trace` dict (400 `bad_request`). `rec = store.consume_challenge(cid, now)` first (single use,
+  same 404/410/409 mapping), then `challenge = imu.generate_challenge(bytes.fromhex(rec["seedHex"]))`,
+  `res = imu.verify(challenge, cid, trace)` (never trust any client-side "done"); `store.record_attempt(cohort,
+  family="imu-v1", passed, rounds_correct=metrics["targetsReached"], rounds_total=3, duration_ms=metrics["durationMs"])`
+  (use `.get(..., 0)`: early failures have few metrics); log `imu_verified` (cid, passed, reasons, metrics; **never
+  the samples**). Pass → `tokens.mint(secret, sub=ids.new_visitor(), assurance="physical", challenge_id=cid,
+  proof="imu-v1")`; log `token_minted` (jti, cid, asr). If `rec.get("handoffId")` (S5): `store.verify_handoff(...)`
+  with the token and return `{"passed": true, "handoff": "verified", "metrics"}` (no token to the phone); else
+  return `{"passed": true, "token", "expiresIn": 120, "assurance": "physical", "proof": "imu-v1", "metrics"}`.
+  Fail → `{"passed": false, "reasons", "metrics"}`. The consumed challenge can't be retried: the client asks for a
+  new one ("Try again").
+- **answer_challenge (`mdg-v1`):** validate `challengeId` (regex) and body `answers` (list of 3 strings ≤ 16 chars);
   `timingsMs` optional (list of ints, clamp 0..600000). `rec = store.consume_challenge(cid, now)` → map exceptions
   to 404 `not_found` / 410 `expired` / 409 `already_answered`. `passed, correct = mdg.check_answers(rec["answers"],
   answers)`; `store.record_attempt(cohort=rec["cohort"], …, duration_ms=sum(timingsMs))`. If passed:
   `token, claims = tokens.mint(keys.token_secret(), sub=ids.new_visitor(), assurance="motion", challenge_id=cid)`;
   log `token_minted` (jti, cid). Return **200** `{"passed": true, "roundsCorrect": 3, "token": token,
   "expiresIn": 120, "assurance": "motion"}` or `{"passed": false, "roundsCorrect": correct}`.
-- **get_stats:** `{"family": "mdg-v1", "chance": {"round": 1/6, "pass": 1/216}, "cohorts": stats.summarize(store.get_stats(...)),
-  "generatedAt": now}`.
+- **get_stats:** `family = query family or "mdg-v1"` (must be in `FAMILIES`); `{"family", "chance": {"round": 1/6,
+  "pass": 1/216} if mdg-v1 else None, "cohorts": stats.summarize(store.get_stats(family)), "generatedAt": now}`.
 - **start_agent_run** (Phase 3): if `LOCAL_DEV` → 501 `cloud_only` ("use `make bench BACKEND=ollama` locally").
   Body `{"model": alias, "frames": 1|4|8}` (defaults: first alias, 4). Unknown alias → 400. If
   `not store.take_agent_run_slot(cap=…)` → 429 `daily_cap`. `run_id = new_id("run")`; `store.create_run({...,
@@ -120,7 +159,13 @@ Routes (see docs/API.md): `GET /v1/health`, `POST /v1/challenges`, `POST /v1/cha
   Only include `truth` and `correct` when `status == "done"`. If query `replay=1` **and** `status == "done"`: load
   `CH#<run.challengeId>`, `replay = mdg.generate_challenge(bytes.fromhex(seedHex))["public"]` and include it.
   Return the run (Decimals converted).
-- **health:** `{"ok": true, "stage": STAGE, "family": "mdg-v1", "agentModels": list(config.agent_aliases()), "cloudAgents": not LOCAL_DEV}`.
+- **health:** `{"ok": true, "stage": STAGE, "family": "mdg-v1", "families": list(FAMILIES), "agentModels": list(config.agent_aliases()), "cloudAgents": not LOCAL_DEV}`.
+- **create_handoff** (S5; until then 501 `not_implemented`): `hid = new_id("ho")`, `poll = token_hex(16)`,
+  `phone = token_hex(16)`; store hashes; log `handoff_created` (hid); **201** `{"handoffId", "pollKey", "phoneKey", "expiresAt"}`.
+- **get_handoff** (S5): validate id + header `x-pact-poll-key` (regexes); item missing or hash mismatch → 404
+  `not_found` (same for both); expired → 410; `pending` → `{"status": "pending"}`; `verified` →
+  `store.deliver_handoff(...)` → `{"status": "verified", "token", "expiresIn": 120, "assurance": "physical",
+  "proof": "imu-v1"}` + log `handoff_delivered`; `delivered` → `{"status": "delivered"}`.
 
 ### `functions/authorizer/app.py`
 - `handler(event, context)` (HTTP API Lambda authorizer, payload v2, simple responses): read `x-pact-token`

@@ -1,23 +1,34 @@
-# CLAUDE.md — PACT (Proof-of-Agency Challenge Test)
+# CLAUDE.md — ARHV: Agent-Resistant Human Verification (codename PACT)
 
-You are building **PACT** for the WeMakeDevs × AWS **First Commit** hackathon (#BharatBuilds, Sept 17–20, 2026).
+You are building **ARHV** (internal codename **PACT**; code identifiers keep `pact`) for the WeMakeDevs × AWS
+**First Commit** hackathon (#BharatBuilds, Sept 17–20, 2026).
 Judges see ONLY three things: the **public repo**, a **≤ 3-minute YouTube demo video**, and a **short writeup**.
 No live demo, no call. If the video doesn't show it, it doesn't count.
 Deadline: `MEMORY.md › Snapshot › Deadline` (confirm at https://www.wemakedevs.org/aws/first-commit/schedule).
 
-## What PACT is (read this once, then build it)
-Human verification for the AI-agent era. PACT hides a shape in ~600 moving dots: dots **inside** the shape drift
-one way, dots **outside** drift the other way. Humans see the shape instantly (motion perception, "common fate").
-Any **single frame**, which is exactly what a screenshot-driven AI agent sees, is statistically uniform noise.
+## What ARHV is (read this once, then build it)
+**Thesis (it drives every decision):** any human-verification test that lives only in the digital channel is a
+capability race that agents win. The durable boundary is **physical**: prove a human just moved a real device, for
+this request. Browsers can't attest sensor data yet, so the endgame is **vendor-attested physical gestures**, the
+way TPM 2.0 became mandatory for Windows 11. ARHV ships the working web prototype, measures its limits honestly and
+proposes the vendor primitive. Full argument, protocol, threat model and proposal: `docs/PHYSICAL.md`.
 
-1. Pass 3 rounds (pick the hidden shape from 6 icons) → server mints a **120 s, single-use humanity token**.
-2. The protected action (booking a seat at a *fictional* high-demand counter, "Tatkal-style") goes through
-   **API Gateway → Lambda authorizer → Cedar policies** (`permit` motion-verified, `forbid` replayed tokens).
-3. A **Strands Agents red team** on **Amazon Bedrock** (Nova/Claude; plus local **Ollama**) attacks the same puzzle
-   live in the **Lab** page; a scoreboard shows **human vs AI pass rates with 95% CIs**.
-4. Accessible, non-cognitive path: **Cognito-verified account → token (assurance=account) → Cedar daily quota**
-   (WCAG 2.2 SC 3.3.8).
-5. Build It track: same code runs on localhost via **SAM CLI + DynamoDB Local/LocalStack + Ollama + Cedar**.
+Two proof families, one token, one Cedar decision:
+1. **`imu-v1` (T1, physical, unattested):** tilt the phone to roll a dot into 3 server-randomised rings. The server
+   verifies the sensor trace with cross-sensor physics (binding, timing, continuity, gravity magnitude,
+   tilt-vs-gravity, gyro-vs-orientation, targets in order) → token `asr=physical`, `prf=imu-v1`.
+   Cheap spoofs are rejected; a physics-consistent simulator passes: that is the **attestation gap** we show
+   on purpose (`scripts/imu_attack_demo.py`).
+2. **`mdg-v1` (T0, perceptual):** a shape hidden in ~600 moving dots: dots **inside** drift one way, dots
+   **outside** the other. Humans see it instantly ("common fate"); any **single frame**, which is what a
+   screenshot-driven agent sees, is uniform noise. 3 rounds × 6 icons → token `asr=motion`.
+3. Tokens are **120 s, single-use** JWTs. The protected action (booking a seat at a *fictional* high-demand
+   counter, "Tatkal-style") goes through **API Gateway → Lambda authorizer → Cedar** (`permit-physical-book`,
+   `permit-motion-book`, `permit-account-book-with-quota`, `forbid-token-replay`).
+4. A **Strands Agents red team** on **Amazon Bedrock** (Nova) attacks `mdg-v1` (`make bench`); results with 95% CIs.
+5. Accessible path: **Cognito-verified account → token (assurance=account) → Cedar daily quota** (WCAG 2.2 SC 3.3.8).
+6. Roadmap (documented, not built): vendor-attested tilt / lid-angle / touch-presence (`navigator.physical`),
+   laptop-hinge proof, WebAuthn presence. Build It: SAM CLI + Cedar offline (+ DynamoDB Local/Ollama if time).
 
 ## Non-negotiable rules
 ### Hackathon rules (breaking one = disqualified or zero)
@@ -41,10 +52,19 @@ Any **single frame**, which is exactly what a screenshot-driven AI agent sees, i
     Infra errors are not "agent failures". Label every cohort honestly.
 14. Use a fictional brand in the UI. Never use IRCTC or any real organisation's name or logo in the product UI
     (real organisations may be cited as *context* in the README and writeup only).
+15. Physical proofs: never trust the client's "done". The server re-derives the challenge from `seedHex` and runs
+    `imu.verify`. Never store or log raw sensor traces (motion data can fingerprint devices); log metrics only.
+16. Keep the attestation gap honest: `test_physically_consistent_synthetic_trace_passes_documenting_the_attestation_gap`
+    must keep passing, and no copy may claim the web tier is unforgeable. Loosen an `imu` rule only per
+    `docs/PHYSICAL.md §3 Tuning knobs`, with a regression test and a `MEMORY.md › Decisions` line.
+17. Public name in UI, README, video and writeup is **ARHV** ("PACT" is also Private Access Control Tokens, the
+    Cloudflare/Chrome/Firefox/Edge anti-bot token protocol of June 2026: same space, so never use it publicly). Code identifiers, routes, headers, stack, table and
+    Cedar names stay exactly as in the naming registry (`pact_core`, `x-pact-token`, `pact-dev`, `Pact::`).
 
 ## Session protocol (every session, every time)
 1. Read `MEMORY.md` (a SessionStart hook re-injects Snapshot / Next Steps / Open Issues automatically).
-2. Open the current phase file in `docs/phases/` and read the docs it lists under **Read first**.
+2. Open the current phase file in `docs/phases/` (**today: `PHASE_SPRINT_TO_2000.md`**) and read the docs it lists
+   under **Read first**.
 3. Per task: implement → verify (`docs/TESTING.md`) → commit → update `MEMORY.md` (Log + Snapshot + Next Steps).
 4. On any error: `docs/SELF_CORRECTION.md` (reproduce → root cause → minimal fix → verify → log; max 3 attempts,
    then take the documented fallback or escalate with a precise question).
@@ -55,7 +75,8 @@ Any **single frame**, which is exactly what a screenshot-driven AI agent sees, i
 ## Documentation map (read on demand; don't guess)
 | File | Contents | Read when |
 |---|---|---|
-| `PLAN.md` | Phases, IST timeline, milestones M1/M2, cut list, what judges must see | Session start; choosing next work |
+| `PLAN.md` | Thesis, tiers, today's sprint timeline, milestones, cut list, what judges must see | Session start; choosing next work |
+| `docs/PHYSICAL.md` | **The thesis**, proof tiers T0/T1/T2, `imu-v1` protocol + verifier rules, handoff, threat model, vendor proposal, sources | Any physical-proof work; any user-facing copy |
 | `MEMORY.md` | Live state: Snapshot, Next Steps, Human-Blocked, Decisions, Log, Errors, Metrics | Always; update after every task |
 | `docs/CONTEXT.md` | Hackathon rules, judging criteria, prizes, the real problem + cited sources | Scope questions; any user-facing copy |
 | `docs/ARCHITECTURE.md` | Diagrams, trust boundaries, flows, **naming registry**, repo layout, design decisions, cost | Before creating any file, resource or name |
@@ -78,7 +99,8 @@ Any **single frame**, which is exactly what a screenshot-driven AI agent sees, i
 | `docs/SELF_CORRECTION.md` | Error protocol + playbooks for known failure modes | On ANY error |
 | `docs/HUMAN_STEPS.md` | What only the human can do, with timing | When blocked; plan ahead |
 | `docs/reference/README.md` | Validated reference scaffold (tested code/config) and how to use it | Phase 0; when unsure how to implement |
-| `docs/phases/PHASE_*.md` | Exhaustive step-by-step instructions per phase | The current phase |
+| `docs/phases/PHASE_SPRINT_TO_2000.md` | **Today's plan**: blocks S0–S5 to 20:00 IST, imu integration steps, gates, cut list | Now |
+| `docs/phases/PHASE_*.md` | Exhaustive step-by-step instructions per phase (component how-to) | The current phase |
 
 ## Repository map (target state)
 ```
@@ -88,7 +110,7 @@ pact/
 ├── .claude/hooks/                   session_context.py, memory_guard.py
 ├── backend/
 │   ├── template.yaml  samconfig.toml  env.local.json  env.localstack.json  requirements-dev.txt
-│   ├── layers/core/pact_core/       mdg, png, tokens, config, keys, ids, store, stats, http, log
+│   ├── layers/core/pact_core/       mdg, imu, png, tokens, config, keys, ids, store, stats, http, log
 │   ├── functions/api/               app.py: challenges, answers, stats, agent runs, health
 │   ├── functions/authorizer/        app.py (authorizer + explain), authz.py, cedar/{schema,policies}
 │   ├── functions/booking/           app.py: the protected action
@@ -96,8 +118,8 @@ pact/
 │   ├── functions/agent_worker/      app.py + pact_agent/ (Strands red team)
 │   └── tests/                       pytest + moto
 ├── frontend/                        Vite + React 19 + TS + Tailwind v4 (+ Amplify Auth UI)
-├── redteam/                         bench.py (CLI), report.py, flow_solver.py (stretch)
-├── scripts/                         doctor.sh, deploy/bootstrap helpers, smoke.py, cedar_demo.py, viz
+├── redteam/                         bench.py (CLI), report.py, imu_sim.py (sensor simulator + spoofs), flow_solver.py (stretch)
+├── scripts/                         doctor.sh, deploy/bootstrap helpers, smoke.py, cedar_demo.py, imu_attack_demo.py, viz
 ├── local/docker-compose.yml         DynamoDB Local (default) | LocalStack (needs token)
 ├── eval/                            results/*.jsonl, report.md
 └── docs/                            everything above; docs/reference/scaffold = validated starting code
@@ -114,6 +136,7 @@ pact/
 | `make smoke` | End-to-end smoke test against the deployed API |
 | `make local-up` / `make local-api` / `make local-smoke` | Build It: data plane / `sam local start-api` on :3000 / smoke |
 | `make cedar-demo` | Cedar decision table (offline) |
+| `make imu-demo [IMU_API=<url>]` | Phone-tilt spoof table: offline, or against the deployed API |
 | `make bench BACKEND=bedrock\|ollama MODEL=… K=4 N=20` | Red-team benchmark → `eval/results/*.jsonl` |
 | `make report` | Rebuild `eval/report.md` |
 | `make logs` | Tail authorizer (Cedar) logs |
@@ -129,7 +152,8 @@ pact/
 - New dependency or deviation from these docs → one line in `MEMORY.md › Decisions` (what, why, alternatives).
 
 ## Definition of done (whole project)
-Live Amplify URL where a human passes and books · Lab page where a Bedrock agent visibly fails · Cedar ALLOW/DENY
+Live Amplify URL where a real phone passes the tilt check and books, and a human passes the motion puzzle · spoof table
+against the live API (attestation gap shown honestly) · Lab page where a Bedrock agent visibly fails · Cedar ALLOW/DENY
 visible (explain route + logs) · accessible account path works · Build It local path works · `eval/report.md` with
 real numbers and CIs · README + architecture + honest limitations · ≤ 3:00 YouTube video showing AWS · writeup
 with AI-tools list · blog on AWS Builder Center · every box in `docs/SUBMISSION.md › Compliance checklist` ticked.

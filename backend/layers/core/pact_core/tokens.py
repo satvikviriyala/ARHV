@@ -11,11 +11,17 @@ ISSUER = "pact"
 AUDIENCE = "pact-demo"
 TTL_SECONDS = 120
 LEEWAY_SECONDS = 5
-ASSURANCE_LEVELS = ("motion", "account")
+ASSURANCE_LEVELS = ("motion", "physical", "account")  # physical = phone-motion proof (imu-v1, unattested web)
 
 
 def mint(
-    secret: str, *, sub: str, assurance: str, challenge_id: str | None = None, now: int | None = None
+    secret: str,
+    *,
+    sub: str,
+    assurance: str,
+    challenge_id: str | None = None,
+    proof: str | None = None,
+    now: int | None = None,
 ) -> tuple[str, dict]:
     if assurance not in ASSURANCE_LEVELS:
         raise ValueError(f"bad assurance {assurance!r}")
@@ -32,6 +38,8 @@ def mint(
     }
     if challenge_id:
         claims["cid"] = challenge_id
+    if proof:
+        claims["prf"] = proof  # proof family, e.g. "mdg-v1" or "imu-v1"
     return jwt.encode(claims, secret, algorithm="HS256"), claims
 
 

@@ -1,8 +1,8 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 Description: >
-  PACT - Proof-of-Agency Challenge Test. Agent-resistant human verification
-  (motion-defined glyph challenge) + Cedar-gated protected action + Bedrock red-team.
+  ARHV / PACT - agent-resistant human verification: motion-defined glyph (mdg-v1) and physical phone-motion
+  (imu-v1) proofs + Cedar-gated protected action + Bedrock red-team.
 
 Parameters:
   Stage:
@@ -138,7 +138,7 @@ Resources:
     Properties:
       CorsConfiguration:
         AllowOrigins: !Ref AllowedOrigins
-        AllowHeaders: [content-type, authorization, x-pact-token, x-pact-cohort]
+        AllowHeaders: [content-type, authorization, x-pact-token, x-pact-cohort, x-pact-poll-key]
         AllowMethods: [GET, POST, OPTIONS]
         MaxAge: 600
       DefaultRouteSettings:
@@ -198,6 +198,13 @@ Resources:
         Health:
           Type: HttpApi
           Properties: { ApiId: !Ref PactHttpApi, Path: /v1/health, Method: GET }
+        # Physical-verification handoff (laptop shows a QR, phone does the imu-v1 challenge, laptop gets the token)
+        CreateHandoff:
+          Type: HttpApi
+          Properties: { ApiId: !Ref PactHttpApi, Path: /v1/handoffs, Method: POST }
+        GetHandoff:
+          Type: HttpApi
+          Properties: { ApiId: !Ref PactHttpApi, Path: "/v1/handoffs/{handoffId}", Method: GET }
 
   # Trust boundary 1: verifies PACT tokens and asks Cedar for a decision.
   AuthorizerFunction:

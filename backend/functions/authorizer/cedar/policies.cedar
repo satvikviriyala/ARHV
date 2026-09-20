@@ -10,6 +10,17 @@ permit (
 )
 when { principal.assurance == "motion" };
 
+// P1b - A visitor who passed the physical phone-motion challenge (imu-v1) may book. Web sensor streams are
+// unattested (docs/PHYSICAL.md), so this is "sensor-assisted" physical proof; vendor-attested physical proofs
+// will get their own, stronger assurance level ("physical-attested") in the roadmap.
+@id("permit-physical-book")
+permit (
+  principal is Pact::Visitor,
+  action == Pact::Action::"BookTicket",
+  resource is Pact::Counter
+)
+when { principal.assurance == "physical" };
+
 // P2 - Accessible path (WCAG 2.2 SC 3.3.8): a verified account may book without any
 // cognitive test, but with a daily quota because account assurance is weaker.
 @id("permit-account-book-with-quota")

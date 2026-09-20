@@ -1,5 +1,7 @@
 # PHASE 2: Frontend + Amplify → M1 (budget 4 h · Sat 21:00–01:00 IST)
 
+> **Sun 20 Sep:** do this phase as sprint block **S2**: Home with VerifyChooser, `/phone`, PhysicalWidget (docs/FRONTEND.md §13); Lab/About/Account are cut today.
+
 **Goal (M1):** on the live Amplify URL, on a phone, a human passes 3 rounds and books the seat; the failure path
 works; the Dev Panel shows the token and the Cedar decision. Then the human study starts (H7).
 **Read first:** `docs/FRONTEND.md` (all), `docs/CHALLENGE_MDG.md §1, §5, §7`, `docs/ACCESSIBILITY.md`, `docs/API.md`.

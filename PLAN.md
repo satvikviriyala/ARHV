@@ -1,62 +1,67 @@
-# PLAN.md — PACT build plan (single source of truth for sequencing)
+# PLAN.md — ARHV (codename PACT) build plan (single source of truth for sequencing)
 
 ## Goal
-Win on all three one-submission tracks (**Ship It**, **Build It**, **Best UI**) plus the **blog side quest**, by
-shipping one thing that works end to end and is *visibly* AWS in a 3-minute video:
-a human passes, an AI agent fails, Cedar decides, all on AWS, with honest numbers.
+Win on all three one-submission tracks (**Ship It**, **Build It**, **Best UI**) with one thing that works end to
+end and is *visibly* AWS in a 3-minute video, built around one thesis:
 
-## Timeline (IST). Assumes the deadline is **Sun 20 Sep 23:59 IST**. Confirm it (see Compression if it's earlier).
-| Phase | Window (IST) | Budget | Exit gate (all must be true) | File |
-|---|---|---|---|---|
-| **0 Setup & preflight** | Sat 16:00–17:00 | 1 h | doctor OK · scaffold copied · 20 backend tests green · frontend builds · Bedrock smoke call OK (or fallback logged) · Amplify URL known · repo pushed | `docs/phases/PHASE_0_SETUP.md` |
-| **1 Backend core + deploy** | Sat 17:00–21:00 | 4 h | stack deployed · `make smoke` green: challenge → answers → token → booking ALLOW; replay DENY; no token 401 | `docs/phases/PHASE_1_BACKEND_CORE.md` |
-| **2 Frontend + Amplify → M1** | Sat 21:00–01:00 | 4 h | **M1:** on the live URL a human passes 3 rounds and books; failure path + mobile OK; study link sent | `docs/phases/PHASE_2_FRONTEND_M1.md` |
-| — sleep — | Sun 01:00–08:00 | | Friends do the study link overnight/morning | |
-| **3 Red team → M2** | Sun 08:00–12:00 | 4 h | **M2:** Lab page runs a Bedrock agent that visibly fails; scoreboard live · **early submission done** | `docs/phases/PHASE_3_REDTEAM_M2.md` |
-| **4 Accessible path + Build It local** | Sun 12:00–15:00 | 3 h | account path books with quota · full stack runs on localhost · Ollama agent fails locally · Cedar demo | `docs/phases/PHASE_4_ACCESSIBLE_AND_LOCAL.md` |
-| **5 Evaluation + polish** | Sun 15:00–18:30 | 3.5 h | `eval/report.md` real numbers + CIs · Best-UI pass · About page · final README · hardening | `docs/phases/PHASE_5_EVAL_AND_POLISH.md` |
-| **6 Video + submission** | Sun 18:30–22:30 | 4 h | video ≤ 3:00 on YouTube · writeup · blog · compliance checklist · submitted | `docs/phases/PHASE_6_DEMO_AND_SUBMIT.md` |
-| Buffer | Sun 22:30–23:59 | 1.5 h | Re-check submission form, repo public, video plays logged-out | |
+> **Digital-only human verification is a capability race that agents win. The durable boundary is physical:
+> prove a human just moved a real device, for this request. Browsers can't attest sensors yet, so vendors
+> must, the way TPM 2.0 became mandatory for Windows 11.** (Full argument: `docs/PHYSICAL.md`.)
 
-**Early submission rule:** at M2 (target Sun 12:00) submit repo + a rough 60–90 s video + draft writeup. The form is
-editable until the deadline, so this guarantees a valid entry even if something later goes wrong.
+What the video proves: a human passes the **phone-tilt physical check** (`imu-v1`) and books; cheap sensor spoofs
+are rejected by server-side physics; a physics-perfect simulator still passes (the honest attestation gap that
+motivates vendor support); on the perceptual tier (`mdg-v1`) a Bedrock agent fails where humans pass; Cedar on
+AWS decides every booking; honest numbers.
+
+## Augmentation (HIGH PRIORITY, Sun 20 Sep): physical-first
+| Tier | Family | Today |
+|---|---|---|
+| T0 perceptual | `mdg-v1` motion-defined glyph | build (Phases 1–2) |
+| **T1 physical, unattested** | **`imu-v1` phone tilt path, physics-verified server-side** | **core + tests + Cedar + UI component done; integrate in the sprint** |
+| T2 physical, vendor-attested | `navigator.physical.request(...)` proposal (tilt / lid angle / touch presence) | documented proposal + roadmap |
+| Accessible | Cognito account path (quota) | function + Cedar policy; UI cut today if needed |
+MacBook hinge: **roadmap only** (no public lid-angle API; M1/M2 Macs lack the sensor). Fingerprint presence:
+**roadmap via WebAuthn user verification**. Both are the strongest *examples* of why vendor support is needed.
+
+## Timeline (IST). Deadline **Sun 20 Sep 2026, 20:00 IST** (MEMORY.md › Snapshot). Submit by 19:45.
+Saturday's Phases 0–2 slipped (IAM + Amplify). **Today runs on `docs/phases/PHASE_SPRINT_TO_2000.md`:**
+| Block | Window (IST) | Exit gate | Detail |
+|---|---|---|---|
+| **S0 Unblock** | 15:45–16:05 | liv28 has AdministratorAccess · tests green · Amplify basic auth off · `imu-demo` target | sprint §S0 |
+| **S1 Backend + deploy** | 16:05–17:20 | stack deployed · `make smoke` green incl. the imu step (physical token → ALLOW; replay → DENY) | sprint §S1 + PHASE_1 |
+| **S2 Frontend + Amplify** | 17:20–18:25 | on the Amplify URL a real phone passes the tilt check and books; motion puzzle works on a laptop | sprint §S2 + PHASE_2 |
+| **S3 Evidence** | 18:25–18:50 | Bedrock bench run · live spoof table · Cedar table · 3-person pilot · README | sprint §S3 |
+| **S4 Video + submit** | 18:50–19:45 | ≤ 3:00 video on YouTube · writeup · compliance checklist · **submitted** | sprint §S4 + PHASE_6 |
+| Buffer | 19:45–20:00 | re-check form, repo public, video plays logged-out | |
+| S5 Stretch | only if S2 passed by 17:50 | laptop → phone handoff (QR) | sprint §S5 |
+Early-submission rule still applies: the moment S2's gate passes, submit repo + a 60 s rough video + draft writeup
+(the form is editable until the deadline), then improve.
 
 ## Milestones
-- **M1: human path live.** Challenge → 3 rounds → token → Cedar ALLOW → booking card, on the Amplify URL, on a phone.
-- **M2: AI fails live.** Lab: pick a Bedrock model → run → "What the AI saw" frames (noise) → wrong answers → FAIL;
-  scoreboard shows humans vs agents.
+- **M1: humans pass, on AWS.** Phone tilt → physical token → Cedar ALLOW → booking card on the Amplify URL; the
+  motion puzzle passes on a laptop.
+- **M2: the machines fail, honestly.** Live spoof table (5 rejected, simulator passes = attestation gap) and a
+  Bedrock agent's real `mdg-v1` numbers with 95% CIs.
 
 ## Critical path
-Phase 0 Bedrock/AWS access → Phase 1 deploy → Phase 2 widget → Phase 3 worker → Phase 6 video.
-Accessibility, local Build It, CI and polish hang off the critical path. Protect it.
+IAM fix → S1 deploy → S2 phone test on HTTPS → S3 evidence → S4 video. Everything else hangs off it.
 
-## What judges must see (feature → video beat → phase)
-| Judging criterion | What proves it | Video beat (docs/DEMO_VIDEO.md) | Phase |
+## What judges must see (feature → video beat → block)
+| Judging criterion | What proves it | Video beat (docs/DEMO_VIDEO.md) | Block |
 |---|---|---|---|
-| Idea & Impact | Tatkal-style bot problem + CAPTCHAs now beaten by agents; who benefits | 0:00–0:20 | 5, 6 |
-| Execution ("does it work?") | Live human pass → booking; replay denied | 0:20–1:05 | 1, 2 |
-| Built on AWS (Ship It: architecture + cost) | Amplify, API GW, Lambda, DynamoDB, S3, Secrets Manager, Cognito, **Bedrock** on screen; cost < $X | 1:05–2:15 | 1–4 |
-| Build It (open source) | Strands Agents + Cedar + SAM CLI + DynamoDB Local/LocalStack + Ollama, all on localhost | 2:15–2:40 | 4 |
-| Best UI | Polished widget + Lab + scoreboard, responsive, accessible | whole video | 2, 5 |
-| Learning | Writeup + blog "what we learned" (perception gap, Cedar, Strands, SAM) | writeup | 6 |
-| Demo video | ≤ 3:00, AWS visible, honest limitations | all | 6 |
+| Idea & Impact | agents beat screen puzzles; physical proof + vendor attestation is the durable answer; Tatkal-style rush as the motivating case | 0:00–0:20, 2:05–2:35 | S4 |
+| Execution | real phone passes and books; spoofs rejected by the live API; replay denied | 0:20–1:05 | S1–S3 |
+| Built on AWS | Amplify, API Gateway + Lambda authorizer, Lambda, DynamoDB, Secrets Manager, Bedrock (Strands), CloudWatch Cedar logs | 1:25–2:05 | S1–S3 |
+| Build It (open source) | Cedar policies (offline `make cedar-demo`), Strands Agents, SAM CLI, open verifier + simulator | 1:05–1:25, 2:35–2:50 | S3 |
+| Best UI | marble-on-a-plate tilt UI, motion puzzle, DevPanel, mobile-first | whole video | S2 |
+| Learning | writeup: why digital tests lose, what physics can and can't prove, Cedar/Strands/SAM lessons | writeup | S4 |
 
-## Cut list (cut from the top; never cut the bottom block)
-1. `redteam/flow_solver.py` bespoke-attacker stretch
-2. GitHub Actions CI
-3. LocalStack profile (keep DynamoDB Local)
-4. Extra benchmark cells (K=1, K=8); keep K=4 for every model
-5. About-page polish beyond: figure + architecture + limitations
-6. Account-path UI polish (keep it functional and shown)
-7. Ollama benchmark size (keep one local run for the Build It beat)
-**Never cut:** M1, M2, Cedar ALLOW/DENY visible, early submission, video, writeup, repo public, submission.
+## Cut list (today; cut from the top; never cut the bottom line)
+1. Lab page + cloud agent worker (use `make bench`) 2. Laptop → phone handoff (S5) 3. Cognito account UI
+4. LocalStack/Ollama local path (keep offline `make cedar-demo`) 5. About page, blog, CI, study beyond a pilot
+**Never cut:** deployed API + Cedar ALLOW/DENY · real-phone pass · spoof table · human motion-puzzle pass ·
+real Bedrock numbers · video with AWS visible · writeup · submission.
 
-## Compression (if the deadline is earlier than Sun 23:59 IST)
-- Deadline ≥ Sun 18:00: merge Phases 4 and 5 (2 h total: account path + DynamoDB Local + report), video at T-4h.
-- Deadline ≥ Sun 12:00: skip Phase 4 local LocalStack and CI; do only `sam local` + Ollama in 45 min; video at T-3h.
-- Deadline Sat night: ship M1 + a minimal Lab (one Bedrock model, K=4) + video. Say so in MEMORY.md › Decisions.
-
-## Parallelism (teams of 2–4)
-- Person A (backend/infra): Phases 1, 3 (worker), 4 (local). Person B (frontend): Phases 2, 3 (Lab UI), 5 (polish).
-- Person C (story): study recruitment, README/About copy, blog draft, video script and recording.
-- One Claude Code session per person on separate branches; merge at M1 and M2; one owner edits MEMORY.md.
+## Saturday plan (historical; phase files remain the how-to reference)
+Phases 0–6 in `docs/phases/PHASE_*.md` define implementation detail for each component. Phase 3 (Lab + worker),
+Phase 4 (account UI + local stack) and Phase 5 (full study) are reduced by the sprint cut list above.

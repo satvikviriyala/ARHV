@@ -1,29 +1,35 @@
 # DEMO VIDEO — ≤ 3:00 on YouTube (aim for 2:50). "If the video doesn't show it, it doesn't count."
 
+Story in one line: **screen puzzles are a race agents win → physical proof works today (live) → here's exactly
+where the web falls short (live attack table) → vendors can close it (the TPM moment) → all of it on AWS.**
+Public name on screen and in the voiceover: **ARHV**.
+
 ## 1. Script (voiceover + what's on screen). Every AWS service named must be *visible* when named.
-| Time | On screen | Voiceover (tight; read at a calm pace) |
+| Time | On screen | Voiceover (tight; calm pace) |
 |---|---|---|
-| 0:00–0:15 | Title card "PACT", then text overlays with sources: "Tatkal: bot traffic peaks in the first 5 minutes (AIR, 2025)" · "3.03 crore suspicious IRCTC IDs deactivated in 2025 (Rajya Sabha reply)" · "AI agents now click 'I'm not a robot'" | "Every day, bots beat real people to scarce slots, like Tatkal tickets. CAPTCHAs are supposed to stop them. But AI agents now solve CAPTCHAs, and the puzzles keep getting harder for humans." |
-| 0:15–0:32 | The animated puzzle full-screen → pause → frozen noise frame, labelled "what an AI agent's screenshot sees" | "PACT flips it. There's a star hidden in these dots. You see it because the dots inside move together. Freeze a frame and it's pure noise, and a frame is all a screenshot-based agent gets." |
-| 0:32–1:02 | Browser with the **Amplify URL visible**: Rush Hour Counter → Book the last seat → 3 rounds (speed ×1.5 is fine) → "Verified" → booking card "Allowed by Cedar policy permit-motion-book" → DevPanel explain: "same token again → DENY forbid-token-replay" | "Three quick rounds and I'm verified. That gives me a single-use token that lives for two minutes. The booking goes through API Gateway, where a Lambda authorizer asks Cedar: allowed. Reuse the token and Cedar forbids it." |
-| 1:02–1:45 | Lab: pick "Claude on Amazon Bedrock" (or Nova) → Let the AI try → progress → side by side "What the AI saw" (noise frames) vs "What you see" (animated) → wrong answers → **AI FAILED** → scoreboard with CIs | "Now the red team. A Strands agent on Amazon Bedrock gets the same puzzle, told exactly how it works, with four consecutive frames. It guesses. Across our runs: humans pass X percent; the best model, Y, at chance. Numbers with confidence intervals are in the repo." |
-| 1:45–2:15 | Quick AWS console cuts (3–4 s each): Amplify app · API Gateway routes + 2 authorizers · Lambda functions list · CloudWatch Logs Insights `authz_decision` rows · DynamoDB `STATS#mdg-v1` items · Cognito user pool · Secrets Manager (name only) · Bedrock model in use | "It's all serverless on AWS: Amplify hosts the app; API Gateway and Lambda run the challenge and the Cedar authorizer; DynamoDB keeps single-use state and stats; Secrets Manager holds the signing key; Bedrock powers the red team. A verification costs a fraction of a cent; the whole weekend cost $Z." |
-| 2:15–2:35 | Terminal: `make local-up` · `make local-api` · `make cedar-demo` (table) · `make bench BACKEND=ollama …` → summary "0/5" | "And it runs on my laptop: SAM CLI emulates the API and the Cedar authorizer, DynamoDB Local stores state, and a local vision model via Ollama and Strands fails the same way." |
-| 2:35–2:48 | `/account`: Cognito sign-in → token assurance=account → booking "1/2 today" | "Motion puzzles aren't for everyone, so there's a non-puzzle path: a verified account through Cognito, with a daily quota enforced by the same Cedar policies." |
-| 2:48–2:58 | About page limitations box, then repo URL | "It isn't unbreakable: a custom optical-flow solver can crack it. But it forces attackers back to building a solver per puzzle, instead of just pointing an agent at it. Code's in the description." |
-Replace X/Y/Z with numbers **from `eval/report.md` and the Billing console**, never estimates.
+| 0:00–0:15 | Text overlays with sources: "Vision models solve 100% of reCAPTCHAv2 image challenges (ETH Zürich, 2024)" · "AI agents click 'I'm not a robot' (2025)" · "Tatkal: bot traffic peaks in the first minutes" → title card **ARHV · Agent-Resistant Human Verification** | "Every CAPTCHA on a screen is a puzzle, and AI agents are getting better at puzzles than we are. So scarce slots, like Tatkal tickets, go to bots in minutes. We asked a different question: what can a person do that a screen-only agent can't?" |
+| 0:15–0:50 | Split screen: **phone screen recording with the Amplify URL visible** + a camera shot of a hand tilting the phone. Rush Hour Counter → Book the last seat → **Tilt your phone** → Start physical check → (iOS: Allow) → dot rolls into 3 rings, each fills → "Verified · physical proof" → booking card "Allowed by Cedar policy `permit-physical-book`" | "Tilt the phone and roll the dot into three rings the server just picked at random. The phone streams its accelerometer, gyroscope and orientation, and the server checks the physics: does gravity agree with the tilt, does the gyroscope agree with the motion, were the targets hit in order? Pass, and I get a single-use, two-minute token. API Gateway's Lambda authorizer asks Cedar: allowed." |
+| 0:50–1:15 | Terminal (big font): `make imu-demo IMU_API=https://…execute-api…` against the **live API**: 5 rows REJECTED with reasons, then the last row **PASSED** highlighted | "Now let's attack it. Sensor emulation, like DevTools: rejected, there's no real gravity. A dead gyroscope: rejected. A phone lying flat on a desk: rejected. A teleporting bot: rejected. A replayed real recording: rejected, the targets changed. But a physics-perfect simulator passes. We show that on purpose: a web page can't prove its sensors are real." |
+| 1:15–1:40 | Graphic: three tiers (Perceptual · Physical · Vendor-attested) → code card `navigator.physical.request({gesture, challenge})` → overlay "Windows 11 made TPM 2.0 mandatory" → icons: phone tilt, laptop hinge, fingerprint | "That gap is for device makers to close, the way Windows 11 made TPM 2.0 mandatory. Let the operating system run the gesture in a trusted overlay, let the secure sensor hub and enclave sign 'a real device felt this fresh gesture', and give the site a private, unlinkable token. Tilt a phone, open a laptop hinge, touch a fingerprint sensor: physical, attested, private." |
+| 1:40–2:05 | Laptop, **Amplify URL visible**: "Spot the shape" motion puzzle → 3 rounds → Verified. Cut to terminal: `make bench BACKEND=bedrock MODEL=nova-2-lite …` summary + `eval/report.md` table with CIs | "No phone? The perceptual tier hides a shape in moving dots. You see it instantly; a screenshot sees noise. Our Strands agent on Amazon Bedrock, given four frames, got X of N; our human testers got Y of N. Today's agents fail, but that's a moving target, and physical proof is how we step off the treadmill." |
+| 2:05–2:40 | AWS console cuts (3–4 s each): Amplify app · API Gateway routes + authorizers · Lambda functions · DynamoDB items (`STATS#imu-v1`, `JTI#…`) · CloudWatch Logs Insights `authz_decision` rows (ALLOW `permit-physical-book`, DENY `forbid-token-replay`) · Secrets Manager (name only) · Bedrock model | "All of it is serverless on AWS. Amplify hosts the app; API Gateway and Lambda run both verifiers and the Cedar authorizer; DynamoDB makes every challenge and token single-use; Secrets Manager holds the signing key; Bedrock powers the red team. Replay the token and Cedar forbids it. A verification costs a fraction of a cent." |
+| 2:40–2:55 | `make cedar-demo` table → README limitations box → repo URL | "The policies are open-source Cedar, testable offline. Honest limits: web sensors are unattested, and a human farm can still tilt phones; quotas handle that. Agents can think. They can't tilt. The code is in the description." |
+Replace X/Y/N with numbers **from `eval/report.md` / `/v1/stats`**; never estimates. If the Bedrock run didn't
+happen, cut that sentence rather than guess.
 
 ## 2. Recording checklist
-- [ ] 1920×1080, browser zoom 110–125%, bookmarks bar hidden, notifications off, clean profile, dark UI.
-- [ ] Warm up: run one challenge + one booking + one Lab run just before recording (avoid cold starts on camera).
-- [ ] Have a finished Lab run open in a second tab in case Bedrock is slow; you can cut to it.
-- [ ] AWS console tabs pre-opened in the order of the script; region us-east-1; hide the account id (crop) and emails.
-- [ ] Terminal: large font (18–20 pt), clear screen, commands typed or pasted, output visible.
-- [ ] Record segments separately (OBS / QuickTime / Windows Game Bar); edit in CapCut / DaVinci Resolve / iMovie.
-- [ ] Voiceover recorded separately in a quiet room; captions burned in or uploaded (auto-captions + fix names).
-- [ ] Final length ≤ 2:58. Export 1080p. Watch it once end-to-end with sound off: does the story still read?
+- [ ] Phone: Do Not Disturb, brightness up, portrait lock on, Safari/Chrome with the Amplify URL bar visible.
+      iPhone: Control Center → Screen Recording (enable in Settings → Control Center first). Android: Quick
+      Settings → Screen record. Practise the tilt twice first so the take is smooth.
+- [ ] Second camera (a friend's phone) films the hand tilting the phone: this shot *is* the thesis.
+- [ ] Laptop: 1920×1080, browser zoom 110–125%, bookmarks bar hidden, notifications off, dark UI.
+- [ ] Warm up the API (one challenge + one booking) right before recording to avoid cold starts on camera.
+- [ ] Terminal: 18–20 pt font, cleared, commands pasted, output visible; crop the AWS account id and any email.
+- [ ] Record segments separately; edit in CapCut / iMovie / DaVinci Resolve; voiceover recorded separately.
+- [ ] Captions (auto + fix "ARHV", "Cedar", "Bedrock"). Final length ≤ 2:58. Watch once with sound off.
 
 ## 3. Upload
-YouTube → visibility **Public** or **Unlisted** (never Private) → title "PACT: human verification AI agents can't
-fake (WeMakeDevs × AWS First Commit)" → description: one-paragraph summary, repo link, live URL, AWS services,
-"#BharatBuilds". Check the link in a logged-out/incognito window. Paste the link into the writeup and README.
+YouTube → **Public** or **Unlisted** (never Private) → title "ARHV: human verification AI agents can't fake,
+with physical proof on AWS (WeMakeDevs × AWS First Commit)" → description: 3-line summary (thesis, what's live,
+the vendor proposal), repo link, live URL, AWS services, "#BharatBuilds". Check the link logged-out. Paste the
+link into the writeup and README.

@@ -10,8 +10,8 @@
 > 6. Never delete history (you may tick Next Steps). Keep Snapshot ≤ 40 lines. Newest Log entries at the bottom.
 
 ## Snapshot
-- Deadline: Sunday, September 20, 2026 at 8:00 PM IST (user-confirmed exact wording)
-- Current phase: 0 (preflight)
+- Deadline: Sun 20 Sep 2026 20:00 IST; submit by 19:45 IST
+- Current phase: Sprint S0
 - Milestones: M1 human-pass-live [ ] · M2 AI-fails-live [ ] · Early submission [ ] · Final submission [ ]
 - Repo URL: https://github.com/satvikviriyala/ARHV (public; main)
 - Web URL (Amplify): https://main.d1i6xn1rxjcnkk.amplifyapp.com (user-verified metadata for `pact-web`, appId `d1i6xn1rxjcnkk`; live browser testing found the root shell but asset paths serving that shell as `text/html`, and a later fresh navigation returned 401 Basic-auth, so this remains an unverified live-success claim)
@@ -24,21 +24,19 @@
 - Human pass rate (study cohort): — · Best agent pass rate: —
 - Last green commit: 8f6318a (`docs(phase-0): record exact deadline and gate status`)
 - Amplify artifact check: local `frontend/dist` has root `index.html` and `assets/`; a locally verified zip built from `dist` has those entries at its root; the live deployment remains unverified
-- Blockers: disable Amplify branch/app access control or password protection for the public demo, upload a root-correct zip, wait for `Succeed`, and recheck JS/CSS content types plus `#root` · H5 user-reported $10 alarm not independently verifiable (`budgets:ViewBudget` denied)
+- Blockers: H0 IAM AdministratorAccess for `liv28`; disable Amplify branch/app access control or password protection for the public demo, upload a root-correct zip, wait for `Succeed`, and recheck JS/CSS content types plus `#root` · H5 user-reported $10 alarm not independently verifiable (`budgets:ViewBudget` denied)
 
 ## Next Steps
-- [x] H1: exact deadline confirmed; PLAN compression for a deadline on/after Sun 18:00 IST applied (merge Phases 4 and 5; video target T-4h)
-- [x] Phase 0: install toolchain items and re-run doctor (all required tools present; LocalStack token optional)
-- [x] Phase 0: complete task 0.3 — exact holder confirmed; MIT LICENSE created; bootstrap commit made
-- [x] Phase 0: run `make setup` (fresh login shell succeeded)
-- [x] Phase 0: complete 0.5 baseline gate (all prescribed checks passed)
-- [x] Phase 0: complete 0.6 AWS + Bedrock preflight (both Nova calls passed; Claude optional/unverified/omitted; AgentModels set)
-- [ ] Phase 0: complete 0.7 Amplify frontend deployment (disable branch/app access control or password protection for the public demo; upload a root-correct zip with `index.html` and `assets/` at top level; wait for `Succeed`; recheck JS/CSS content types and `#root`; SPA rewrite remains unchanged)
-- [ ] Phase 0: complete 0.8 budget-alarm verification (user reports console setup; read-only CLI verification is blocked by missing `budgets:ViewBudget`)
-- [x] Phase 0: verify 0.9 existing public GitHub remote (no create/push needed)
-- [ ] Phase 0: resolve 0.7 by disabling public-demo access control/password protection, uploading the root-correct zip, waiting for console `Succeed`, and confirming asset responses render React into `#root`; then complete 0.8 budget verification and close Phase 0 before tagging or starting Phase 1
+- [ ] Sprint S0 (15:45–16:05): preflight, Makefile `imu-demo`, green tests, and physical-first augmentation commit
+- [ ] Sprint S1 (16:05–17:20): backend integration, deploy, and smoke test
+- [ ] Sprint S2 (17:20–18:25): frontend physical and motion paths, Amplify deploy, and real-phone test
+- [ ] Sprint S3 (18:25–18:50): live evidence, attack table, Cedar demo, report, and pilot
+- [ ] Sprint S4 (18:50–19:45): video, writeup, public repo, and submission
+- [x] Prior Phase 0 toolchain, baseline, Bedrock preflight, license, and public GitHub remote
+- [ ] Prior Phase 0 Amplify public deployment and budget-alarm verification follow-ups
 
 ## Human-Blocked
+- 2026-09-20 15:56 IST — H0: safe read-only checks show the current `liv28` principal is not AdministratorAccess-capable (`iam:ListAttachedUserPolicies`, `iam:ListGroupsForUser`, `amplify:ListApps`, and `budgets:ViewBudget` are denied). Console (root/admin) → IAM → Users → `liv28` → Add permissions → Attach policies directly → **AdministratorAccess** → Add. Then run `aws sts get-caller-identity`. No IAM change was made by the agent.
 - 2026-09-19 — [RESOLVED] H1: the user confirmed the exact deadline as “Sunday, September 20, 2026 at 8:00 PM IST.”
   PLAN’s “Deadline ≥ Sun 18:00” rule therefore applies: merge Phases 4 and 5 into 2 hours and target the video
   at T-4h (16:00 IST).
@@ -92,6 +90,9 @@
 - 2026-09-19 — Accessible path = Cognito-verified account → token (assurance=account) → Cedar daily quota of 2 (non-cognitive, WCAG 2.2 SC 3.3.8).
 - 2026-09-19 — Generator randomness = keyed SHAKE-256 (`KeyedRng`). Rejected: Mersenne Twister, whose state can be recovered from the published dots, which would reveal hidden dots and the mask.
 - 2026-09-19 — Local data plane default = DynamoDB Local (no account). LocalStack is optional: it needs a free auth token since March 2026.
+- 2026-09-20 — imu-v1 physical proof family added, thesis screen-only tests are a losing race and vendor attestation is the endgame
+- 2026-09-20 — public name is ARHV because PACT is also Private Access Control Tokens (Cloudflare/Chrome/Firefox/Edge/Shopify, June 2026)
+- 2026-09-20 — MacBook hinge and fingerprint presence are roadmap-only because there is no public lid-angle API and M1/M2 Macs lack the sensor.
 
 ## Log
 - 2026-09-19 — Handover pack created: docs + validated reference scaffold (backend: 20 pytest tests pass, ruff clean, cfn-lint clean; Cedar policies validated with cedarpy 4.12.0; Strands 1.56.0 plumbing tested with a fake model; frontend skeleton builds/lints/tests on Vite 8 + React 19 + Tailwind 4). No project code written or deployed yet.
@@ -168,6 +169,9 @@
   build/package is root-correct, but the still-unverified deployment serves the HTML shell for JS/CSS asset
   requests, preventing React startup; the later 401 Basic-auth response leaves public access control as a
   possible second blocker. The valid SPA rewrite remains unchanged.
+- 2026-09-20 15:56 IST — Sprint S0 started. `aws sts get-caller-identity` confirmed `liv28`; safe read-only
+  IAM, Amplify, and Budgets checks were denied, so H0 remains human-blocked. Snapshot, sprint Next Steps, and
+  the physical-first naming/roadmap decisions were updated before code work.
 
 ## Errors & Fixes
 - 2026-09-19 — `doctor.sh` exited 1 with missing prerequisites → the machine lacks the Phase 0 toolchain → human
@@ -208,6 +212,10 @@
 - 2026-09-19 — Initial `sam validate --lint` exited 127 because the persisted shell could not find `sam` on its
   PATH → reran the same validation through a fresh `zsh -lic` login shell → SAM validation passed; no template
   or configuration error was found.
+- 2026-09-20 15:56 IST — Read-only IAM policy/group inspection and Amplify/Budgets checks returned
+  `AccessDenied` for `liv28` → the current principal cannot verify or grant AdministratorAccess → no IAM
+  mutation was attempted; added H0 and continued with local S0 work. Verification: `aws sts get-caller-identity`
+  passed and the denied actions were recorded exactly.
 
 ## Open Issues
 - (none yet)

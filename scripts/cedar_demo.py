@@ -13,6 +13,7 @@ import authz  # noqa: E402
 CASES = [
     ("passed motion challenge", "motion", False, 0),
     ("same token replayed", "motion", True, 0),
+    ("passed phone-tilt challenge (physical)", "physical", False, 0),
     ("verified account, 0 bookings today", "account", False, 0),
     ("verified account, 1 booking today", "account", False, 1),
     ("verified account, quota used (2)", "account", False, 2),

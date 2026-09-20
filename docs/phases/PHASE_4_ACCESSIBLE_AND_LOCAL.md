@@ -1,5 +1,7 @@
 # PHASE 4: Accessible path + Build It on localhost (budget 3 h · Sun 12:00–15:00 IST)
 
+> **Sun 20 Sep:** cut today except `make cedar-demo` (offline Build It beat). The account-token function and quota policy still ship with the stack.
+
 **Goal:** (a) people who can't use motion puzzles can still book through a Cognito-verified account, rate-limited by
 Cedar; (b) the whole system runs on localhost with open-source AWS tools, including a local Strands + Ollama red team.
 **Read first:** `docs/ACCESSIBILITY.md`, `docs/FRONTEND.md §8`, `docs/AUTHZ_CEDAR.md §3–5`, `docs/LOCAL_DEV.md`.

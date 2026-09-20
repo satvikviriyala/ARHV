@@ -72,19 +72,43 @@ slot, the fan against scalper bots. Any first-come-first-served public slot wher
    disabled users; WCAG 2.2 **SC 3.3.8 Accessible Authentication (Minimum)** requires an alternative to cognitive
    function tests. PACT ships a non-cognitive account path for exactly this reason.
 
-**PACT's claim (keep it this precise):** a human-verification step whose answer is carried only by motion. Any
+4. **Why the answer has to become physical (ARHV's thesis; full argument in `docs/PHYSICAL.md`).**
+   - Every digital-only test is a capability race: the items above show image, checkbox and logic CAPTCHAs falling
+     in turn, and each new puzzle is set by today's model limits.
+   - The platform precedent exists: **Windows 11 requires TPM 2.0**, so disk encryption and credentials rest on
+     hardware; **Apple Private Access Tokens** (iOS 16, 2022) already replace some CAPTCHAs with device attestation;
+     **Play Integrity** and **App Attest** bind nonces to genuine devices/apps; **WebAuthn** already attests user
+     presence (Touch ID, Windows Hello).
+   - What's missing is one primitive: "a real device experienced this fresh, randomised physical gesture", open and
+     privacy-preserving. **Google's Web Environment Integrity** proposal was withdrawn (Nov 2023) after openness
+     and privacy criticism, which gives the design rules. **Private Access Control Tokens (PACT)**, announced June 22,
+     2026 by Cloudflare with Chrome, Firefox, Edge and Shopify, show where the industry is going: anonymous
+     "human in the loop" tokens instead of CAPTCHAs, issued by sites with authentic user relationships. ARHV's
+     proposal adds an issuance signal that needs no identity: a vendor-attested physical gesture.
+   - Prior art for phone-tilt CAPTCHAs: **SenCAPTCHA** (IMWUT 2020). ARHV's contribution is the cross-sensor
+     physics verifier, the measured attestation gap, Cedar-expressed proof tiers on AWS and the vendor proposal.
+
+**ARHV's claim (keep it this precise):** (1) the physical tier (`imu-v1`) proves more than any screen puzzle can:
+screen-only agents have no sensor stream, and cheap sensor spoofs fail server-side physics checks; but web sensors
+are unattested, so a physics-aware simulator passes (shown). (2) The perceptual tier (`mdg-v1`) is described next.
+(3) Closing the gap requires vendor attestation, which we specify.
+
+**The perceptual tier's claim (keep it this precise):** a human-verification step whose answer is carried only by motion. Any
 single frame is noise, so screenshot-driven agents (today's cheap, general-purpose automation) are reduced to
 guessing, while humans pass in seconds. It is **not** unbreakable: a bespoke optical-flow solver written for this
 specific puzzle can beat it (see `docs/SECURITY.md`). PACT moves attackers from "point any agent at it" back to
 "engineer a custom solver per puzzle family", which is the cost asymmetry CAPTCHAs relied on before general agents.
 
-## 6. Why PACT scores on every criterion
+## 6. Why ARHV scores on every criterion
 - **Impact:** concrete Indian problem (Tatkal and scarce slots) + a global one (agents vs CAPTCHAs) + accessibility.
 - **AWS:** eight managed services on the critical path, visible in the video; clear cost story (pennies per 1,000
   verifications; the red team costs cents).
 - **Learning:** perception science, Cedar ABAC, Strands agents, SAM, honest red-teaming.
 - **Execution:** one sharp loop that works (verify → token → Cedar → action) and a measurable result.
-- **Video:** the "what the AI saw vs what you see" moment is instantly legible.
+- **Video:** a real hand tilting a real phone, then the live spoof table with the honest "simulator passes" row,
+  then "what the AI saw vs what you see". The thesis is visible, not asserted.
+- **Idea:** a position, not just a puzzle: human verification must become physical and vendor-attested, with a
+  concrete, privacy-first primitive (docs/PHYSICAL.md §7).
 
 ## 7. Sources
 - Hackathon: https://www.wemakedevs.org/aws/first-commit · rules: https://www.wemakedevs.org/aws/first-commit/rules · schedule: https://www.wemakedevs.org/aws/first-commit/schedule
@@ -98,3 +122,5 @@ specific puzzle can beat it (see `docs/SECURITY.md`). PACT moves attackers from 
 - W3C, Inaccessibility of CAPTCHA: https://www.w3.org/TR/turingtest/ · WCAG 2.2 SC 3.3.8: https://www.w3.org/WAI/WCAG22/Understanding/accessible-authentication-minimum
 - Bedrock automatic model enablement: https://aws.amazon.com/about-aws/whats-new/2025/10/amazon-bedrock-automatic-enablement-serverless-foundation-models
 - LocalStack 2026 changes: https://blog.localstack.cloud/2026-upcoming-pricing-changes/
+- Physical-proof sources (TPM 2.0, Private Access Tokens, Play Integrity, App Attest, WEI, Private Access Control Tokens,
+  SenCAPTCHA, W3C Device Orientation): `docs/PHYSICAL.md §9`

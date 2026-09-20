@@ -2,7 +2,8 @@
 // (deployed) and in pytest / scripts/cedar_demo.py (local). Same files, both tracks.
 namespace Pact {
   // Who is asking. `assurance` is set from the verified PACT token:
-  //   "motion"  -> passed the motion-defined glyph challenge
+  //   "motion"   -> passed the motion-defined glyph challenge (mdg-v1)
+  //   "physical" -> passed the phone-motion challenge (imu-v1): physically coherent sensor trace
   //   "account" -> accessible path: signed in with a verified Cognito account
   entity Visitor = {
     assurance: String,

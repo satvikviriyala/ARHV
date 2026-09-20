@@ -13,6 +13,8 @@ SECRET = "x" * 64
     [
         ("motion", False, 0, "ALLOW", ["permit-motion-book"]),
         ("motion", True, 0, "DENY", ["forbid-token-replay"]),
+        ("physical", False, 0, "ALLOW", ["permit-physical-book"]),
+        ("physical", True, 0, "DENY", ["forbid-token-replay"]),
         ("account", False, 0, "ALLOW", ["permit-account-book-with-quota"]),
         ("account", False, 1, "ALLOW", ["permit-account-book-with-quota"]),
         ("account", False, 2, "DENY", []),
@@ -30,6 +32,12 @@ def test_token_roundtrip_and_claims():
     tok, claims = tokens.mint(SECRET, sub="v-1", assurance="motion", challenge_id="c-1")
     got = tokens.verify(SECRET, tok)
     assert got["jti"] == claims["jti"] and got["asr"] == "motion" and got["cid"] == "c-1"
+
+
+def test_physical_token_carries_proof_family():
+    tok, _ = tokens.mint(SECRET, sub="v-2", assurance="physical", challenge_id="c-2", proof="imu-v1")
+    got = tokens.verify(SECRET, tok)
+    assert got["asr"] == "physical" and got["prf"] == "imu-v1"
 
 
 def test_token_rejects_tamper_expiry_and_wrong_key():

@@ -1,5 +1,7 @@
 # PHASE 3: Red team → M2 + early submission (budget 4 h · Sun 08:00–12:00 IST)
 
+> **Sun 20 Sep:** reduced by the sprint cut list: run the red team with `make bench` (S3); the Lab page and cloud worker are cut unless time remains.
+
 **Goal (M2):** from the Lab page, a Strands agent on Amazon Bedrock attacks a fresh puzzle; the page shows "What the
 AI saw" (noise frames) next to "What you see" (animated), the AI's wrong answers and the verdict; the scoreboard
 compares humans and agents. Then submit an early version (the form stays editable).

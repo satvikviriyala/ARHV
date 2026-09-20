@@ -1,5 +1,7 @@
 # PHASE 1: Backend core + deploy (budget 4 h · Sat 17:00–21:00 IST)
 
+> **Sun 20 Sep:** do this phase as sprint block **S1**, with the `imu-v1` additions listed there (family param, trace answers, physical tokens, smoke step 9b).
+
 **Goal:** the complete human-path backend deployed on AWS: challenge → answers → motion token → Cedar-authorized
 booking, plus explain, stats and the account-token route (UI comes later). Agent-run routes return 501 until Phase 3.
 **Read first:** `docs/ARCHITECTURE.md` (naming registry!), `docs/BACKEND.md`, `docs/API.md`, `docs/DATA_MODEL.md`,
