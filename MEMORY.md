@@ -14,31 +14,32 @@
 - Current phase: Sprint S4
 - Milestones: M1 human-pass-live [ ] · M2 AI-fails-live [ ] · Early submission [ ] · Final submission [ ]
 - Repo URL: https://github.com/satvikviriyala/ARHV (public; main)
-- Web URL (Amplify): https://main.d1i6xn1rxjcnkk.amplifyapp.com (`pact-web`, appId `d1i6xn1rxjcnkk`; deployment job 6 reported `SUCCEED`; refreshed rail UI root, JS/CSS assets, and browser rendering verified)
+- Web URL (Amplify): https://main.d1i6xn1rxjcnkk.amplifyapp.com (`pact-web`, appId `d1i6xn1rxjcnkk`; deployment job 9 reported `SUCCEED`; confirmation route, failure state, and retry focus verified in the browser)
 - API URL: https://28y0g9h8ki.execute-api.us-east-1.amazonaws.com
 - Stack: pact-dev (us-east-1) — `CREATE_COMPLETE`; deployed by `make deploy` on 2026-09-20
 - Bedrock models verified (alias=id): nova-2-lite=us.amazon.nova-2-lite-v1:0; nova-pro=us.amazon.nova-pro-v1:0; both Nova calls pass; Claude remains unverified/omitted and optional, with no Anthropic form submitted
 - Scaffold: validated reference copied; Phase 0 toolchain, setup, baseline, and Nova smoke green; MIT LICENSE and bootstrap commit complete
 - License: MIT; copyright holder confirmed as `Venkata Satya Satvik Viriyala`; task 0.3 commit `3e18dbf5f4ebffcbaad61cdd7f9daefc6823c700`
-- Baseline: backend 66 passed; frontend 10 passed; Ruff/format/ESLint/TypeScript clean; Cedar 7-row demo, SAM validation, and containerized SAM build passed
+- Latest gate: backend 70 passed; frontend 14 passed; Ruff/format/ESLint/TypeScript clean; Cedar 7-row demo, SAM validation, and containerized SAM build passed
 - Human pass rate (study cohort): — · Best agent pass rate: —
-- Last green commit: fbab01b (`docs: record deployed rail UI`)
-- Amplify artifact check: local `frontend/dist` has root `index.html` and `assets/`; live root returned 200 `text/html` (793 bytes), JS returned 200 `text/javascript` (374258 bytes), CSS returned 200 `text/css` (16331 bytes); browser/CDP found `#root`, one child, the ARHV document title/content, and no dynamic-import error
+- Last green commit: ff132ee (`feat(web): add booking confirmation flow`)
+- Amplify artifact check: local `frontend/dist` has root `index.html` and `assets/`; live root returned 200 `text/html` (792 bytes), JS returned 200 `text/javascript` (415205 bytes), CSS returned 200 `text/css` (23976 bytes); `/booking/confirmed` returned the SPA shell and the browser rendered the ARHV document with no dynamic-import error
 - Frontend environment: production/development files generated from `pact-dev` outputs by `make web-env`
 - Cloud smoke: `make smoke` passed every listed check, including live `imu-v1` pass/booking/replay/explain and orientation spoof rejection
 - Live evidence: `make imu-demo IMU_API=https://28y0g9h8ki.execute-api.us-east-1.amazonaws.com` rejected all five cheap spoofs and passed only the physics-consistent simulator; `make cedar-demo` showed physical ALLOW, replay/quota DENY
 - IMU tuning: `tiltErrDeg` budget is now 18° (was 12°) for modest browser sensor-fusion/calibration skew; no gravity, gyro, continuity, target, binding, or token rules changed; focused IMU tests 22 passed
-- Frontend refresh: `ARHV Rail` fictional route/date/class/quota flow defaults Bengaluru → Visakhapatnam, lists three fictional services, and contextualises verification as a quick presence check; local lint, TypeScript, 10 Vitest tests, and production build passed
+- Frontend refresh: `ARHV Rail` fictional route/date/class/quota flow defaults Bengaluru → Visakhapatnam, lists three fictional services, and contextualises verification as a quick presence check; booking success now navigates to `/booking/confirmed`, while verification/authz failures expose a focused retry; local lint, TypeScript, 14 Vitest tests, and production build passed
 - Local evidence: containerized SAM build passed; networked local smoke passed health, both proof families, bookings, replay, stats, spoof, and agent-route checks; local IMU table and Cedar demo passed
-- Live evidence: post-deploy `make smoke SMOKE_ARGS=--no-agent` passed all health, mdg, booking/replay, stats, imu, and orientation-spoof checks; live assets returned 200 with `text/javascript`/`text/css`; browser verified Home, contextual chooser, and `/phone` physical challenge copy
+- Live evidence: post-deploy `make smoke SMOKE_ARGS=--no-agent` passed all health, mdg, booking/replay, stats, imu, and orientation-spoof checks; live assets returned 200 with `text/javascript`/`text/css`; browser verified Home, contextual chooser focus, the 1/3 motion-puzzle failure copy, and retry focus returning to the first verification option
 - Blockers: complete real-phone tilt, human motion-puzzle/study, video, and submission checks · H5 user-reported $10 alarm not independently verifiable (`budgets:ViewBudget` denied)
 
 ## Next Steps
 - [x] Sprint S0 (15:45–16:05): preflight, Makefile `imu-demo`, green tests, and physical-first augmentation commit
 - [x] Sprint S1 (16:05–17:20): backend integration/local gate and containerized build passed; `make deploy` completed with `pact-dev` `CREATE_COMPLETE` and live API output
-- [ ] Sprint S2 (17:20–18:25): frontend local gate passed and Amplify deployment job 6 succeeded with rail-counter refresh; real-phone check pending
+- [x] Sprint S2 (17:20–18:25): frontend local gate passed and Amplify deployment job 9 succeeded with rail-counter refresh and booking-result UX; real-phone check pending
 - [ ] Sprint S3 (18:25–18:50): local/live API evidence, attack table, Cedar demo, and Amplify render passed; human pilot remains
 - [ ] Sprint S4 (18:50–19:45): truthful README/writeup/video draft prepared; recording, upload, and external submission remain human-blocked
+- [x] Booking-result UX: confirmation route/card, authorization failure state, fresh-challenge retry, focus management, and focused frontend tests
 - [x] Prior Phase 0 toolchain, baseline, Bedrock preflight, license, and public GitHub remote
 - [x] Prior Phase 0 Amplify public deployment; budget-alarm verification remains pending
 
@@ -107,6 +108,7 @@
 - 2026-09-20 — Added frontend dependency `qrcode` and `@types/qrcode` for the laptop-to-phone QR fallback required by the physical chooser; npm retained the documented React 19 peer warnings and installed with 0 vulnerabilities.
 - 2026-09-20 — Set the `imu-v1` tilt-vs-gravity median-error budget from 12° to 18° per `docs/PHYSICAL.md §3`: the client merges independently timed orientation and motion events, so a modest fusion/calibration offset can reject a coherent human-like trace; gravity, gyro, continuity, targets, binding, and replay semantics remain unchanged. Rejected loosening target/rate checks.
 - 2026-09-20 — Reframed the demo counter as a fictional `ARHV Rail` journey search with existing design tokens and no new dependency; route controls stay local to the demo while the protected API booking contract remains unchanged.
+- 2026-09-20 — Booking results now use ephemeral React Router state to enter `/booking/confirmed`; existing booking fields provide the fictional reference/seat and local journey state provides route/date/class. Existing `passed:false` verification responses and 401/403 authorization responses keep their contracts and render a fresh-check retry; no backend change or dependency was added.
 
 ## Log
 - 2026-09-19 — Handover pack created: docs + validated reference scaffold (backend: 20 pytest tests pass, ruff clean, cfn-lint clean; Cedar policies validated with cedarpy 4.12.0; Strands 1.56.0 plumbing tested with a fake model; frontend skeleton builds/lints/tests on Vite 8 + React 19 + Tailwind 4). No project code written or deployed yet.
@@ -282,6 +284,12 @@
   all passed. No real-phone success is inferred.
 - 2026-09-20 17:57 IST — Pushed verified `main` through `fbab01b` to public GitHub `origin/main`; the only
   untracked file is the user-supplied reference screenshot `IRCTC.png`, which was not added or used by the product.
+- 2026-09-20 18:27 IST — Implemented the rail result state machine: `BookingCard` routes successful responses to `/booking/confirmed`, 401/403 responses render the exact suspicious-activity retry state, and `Home`/`Phone` preserve journey values while remounting a fresh verification challenge. Added focused success/failure/retry tests and documented the route in `docs/FRONTEND.md`. Commit `ff132ee` (`feat(web): add booking confirmation flow`).
+- 2026-09-20 18:27 IST — Final local verification passed: `make test` = backend 70 and frontend 14; `make lint`; `npm run build`; `cd backend && sam validate --lint`; `git diff --check`; and ReadLints all passed.
+- 2026-09-20 18:49 IST — `make web-env` refreshed public frontend configuration from `pact-dev`; `make web-deploy` built the bundle and Amplify deployment job 7 reported `SUCCEED`. Live root/assets and `/booking/confirmed` returned 200 with expected HTML/JavaScript/CSS content types.
+- 2026-09-20 18:49 IST — `make smoke SMOKE_ARGS=--no-agent` passed every live health, mdg, booking/replay, stats, imu, and orientation-spoof check. No real-phone or human outcome was inferred.
+- 2026-09-20 18:51 IST — Canonical `make local-smoke` hit the known host DynamoDB 404; a direct container-IP endpoint did not respond, so it was stopped. The documented Docker-network fallback then passed every local health, mdg, Cedar booking/replay, stats, imu, spoof, and agent-local-fallback check.
+- 2026-09-20 18:55 IST — Browser verification after the focus fix produced Amplify deployment job 9 (`SUCCEED`): Home and the chooser rendered, deliberately choosing the first motion option three times produced the live `1/3` failure state with exact copy, and `Try verification again` returned focus to the first verification option. This was a browser failure-path check, not a human or phone pass.
 
 ## Errors & Fixes
 - 2026-09-19 — `doctor.sh` exited 1 with missing prerequisites → the machine lacks the Phase 0 toolchain → human
@@ -393,6 +401,10 @@
 - 2026-09-20 — First live asset-check loop used zsh’s special `path` variable and therefore shadowed `PATH`,
   producing `command not found: curl` → renamed the loop variable to `asset`; root and both deployed assets then
   returned 200 with expected content types and sizes.
+- 2026-09-20 18:16 IST — `npx vitest run` initially failed two booking-flow assertions because test DOM cleanup was missing and the existing success label is a paragraph, not a heading → added cleanup and corrected the focused assertion → all 14 frontend tests passed.
+- 2026-09-20 18:16 IST — `npm run lint` flagged `BookingCard` state resets called synchronously in an effect → removed those redundant resets → frontend lint, typecheck, and build passed.
+- 2026-09-20 18:25 IST — Live browser review found `VerifyChooser`’s focus ref attached to the wrong branch/button, so the laptop modal did not focus its first motion option → attached the ref to the actual first option, reran frontend gates, and redeployed → job 9 succeeded and browser snapshots showed the first option focused both on open and after retry.
+- 2026-09-20 18:51 IST — `make local-smoke` failed with DynamoDB `GetItem` HTTP 404 because host port 8000 was not the Docker-network DynamoDB endpoint; a host container-IP retry stalled → used the documented one-shot `pact-local` Docker network with `dynamodb-local:8000`, `host.docker.internal:3000`, and dummy local credentials → all local smoke checks passed.
 
 ## Open Issues
 - (none yet)
