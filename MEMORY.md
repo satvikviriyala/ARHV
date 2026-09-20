@@ -20,15 +20,16 @@
 - Bedrock models verified (alias=id): nova-2-lite=us.amazon.nova-2-lite-v1:0; nova-pro=us.amazon.nova-pro-v1:0; both Nova calls pass; Claude remains unverified/omitted and optional, with no Anthropic form submitted
 - Scaffold: validated reference copied; Phase 0 toolchain, setup, baseline, and Nova smoke green; MIT LICENSE and bootstrap commit complete
 - License: MIT; copyright holder confirmed as `Venkata Satya Satvik Viriyala`; task 0.3 commit `3e18dbf5f4ebffcbaad61cdd7f9daefc6823c700`
-- Baseline: backend 65 passed; ruff/format/eslint/tsc clean; frontend build plus 2 tests passed; Cedar 6-row demo, SAM validation, and containerized SAM build passed
+- Baseline: backend 66 passed; frontend 10 passed; Ruff/format/ESLint/TypeScript clean; Cedar 7-row demo, SAM validation, and containerized SAM build passed
 - Human pass rate (study cohort): — · Best agent pass rate: —
-- Last green commit: 7137fbc (`feat(web): add fictional rail booking flow`)
+- Last green commit: fac54af (`docs: record rail UI verification`)
 - Amplify artifact check: local `frontend/dist` has root `index.html` and `assets/`; live root returned 200 `text/html` (793 bytes), JS returned 200 `text/javascript` (374258 bytes), CSS returned 200 `text/css` (16331 bytes); browser/CDP found `#root`, one child, the ARHV document title/content, and no dynamic-import error
 - Frontend environment: production/development files generated from `pact-dev` outputs by `make web-env`
 - Cloud smoke: `make smoke` passed every listed check, including live `imu-v1` pass/booking/replay/explain and orientation spoof rejection
 - Live evidence: `make imu-demo IMU_API=https://28y0g9h8ki.execute-api.us-east-1.amazonaws.com` rejected all five cheap spoofs and passed only the physics-consistent simulator; `make cedar-demo` showed physical ALLOW, replay/quota DENY
 - IMU tuning: `tiltErrDeg` budget is now 18° (was 12°) for modest browser sensor-fusion/calibration skew; no gravity, gyro, continuity, target, binding, or token rules changed; focused IMU tests 22 passed
 - Frontend refresh: `ARHV Rail` fictional route/date/class/quota flow defaults Bengaluru → Visakhapatnam, lists three fictional services, and contextualises verification as a quick presence check; local lint, TypeScript, 10 Vitest tests, and production build passed
+- Local evidence: containerized SAM build passed; networked local smoke passed health, both proof families, bookings, replay, stats, spoof, and agent-route checks; local IMU table and Cedar demo passed
 - Blockers: complete real-phone tilt, human motion-puzzle/study, video, and submission checks · H5 user-reported $10 alarm not independently verifiable (`budgets:ViewBudget` denied)
 
 ## Next Steps
@@ -267,6 +268,10 @@
   `npx vitest run` (5 files, 10 tests), and `npm run build`; ReadLints reported no errors. Browser review on
   `http://localhost:5173` verified default route controls, three service cards, contextual `QUICK PRESENCE CHECK`,
   phone QR generation, and `/phone` copy including `Tilt your phone gently`. No real phone or live booking is inferred.
+- 2026-09-20 17:48 IST — Full verification passed: `make test` reported backend 66 passed and frontend 10 passed;
+  `make lint`, `cd backend && sam validate --lint`, `make build`, `make cedar-demo`, and local
+  `make imu-demo IMU_API=http://127.0.0.1:3000` passed. The local smoke suite passed all listed checks from a
+  one-shot container on the `pact-local` network because the host port 8000 is occupied by another listener.
 
 ## Errors & Fixes
 - 2026-09-19 — `doctor.sh` exited 1 with missing prerequisites → the machine lacks the Phase 0 toolchain → human
@@ -369,6 +374,12 @@
 - 2026-09-20 — Local browser `/phone` initially showed `Network error.` at `http://127.0.0.1:5173` because the
   deployed CORS allow-list contains `http://localhost:5173`, not the loopback alias → reopened at
   `http://localhost:5173/phone`; the challenge loaded and the phone UI snapshot passed. No CORS policy was widened.
+- 2026-09-20 — Canonical `make local-smoke` reached the API but its host-side DynamoDB read returned HTTP 404
+  because the local SAM containers use `dynamodb-local:8000` on the `pact-local` Docker network while host port
+  8000 is occupied by another listener → confirmed `pact-local` already existed, then ran the documented
+  networked fallback with `PACT_SMOKE_DDB_ENDPOINT=http://dynamodb-local:8000`, dummy local credentials, and
+  `host.docker.internal:3000`; all smoke checks passed. An intermediate container command lacked credentials
+  (`NoCredentialsError`) and was corrected without changing application code.
 
 ## Open Issues
 - (none yet)
