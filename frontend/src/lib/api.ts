@@ -37,6 +37,42 @@ export type Stats = {
     meanMs: number;
   }>;
 };
+export type Health = {
+  ok: boolean;
+  stage: string;
+  agentModels: string[];
+  cloudAgents: boolean;
+};
+export type AgentRunRound = {
+  index: number;
+  options: string[];
+  frameUrls?: string[];
+  answer?: string | null;
+  confidence?: number | null;
+  rationale?: string;
+  valid?: boolean;
+  latencyMs?: number;
+  repaired?: boolean;
+  error?: string | null;
+  truth?: string;
+  correct?: boolean;
+};
+export type AgentRun = {
+  runId: string;
+  status: "queued" | "running" | "done" | "error";
+  model: string;
+  modelId: string;
+  frames: number;
+  progress: number;
+  createdAt: number;
+  startedAt?: number;
+  finishedAt?: number;
+  passed: boolean;
+  roundsCorrect: number;
+  error: string | null;
+  rounds: AgentRunRound[];
+  replay?: MdgChallenge;
+};
 export type ImuAnswer = {
   passed: boolean;
   token?: string;
@@ -117,6 +153,7 @@ async function request<T>(
 }
 
 export const api = {
+  health: () => request<Health>("GET", "/v1/health"),
   createChallenge: (options: { family?: "mdg-v1" | "imu-v1"; cohort?: string } = {}) =>
     request<MdgChallenge | ImuChallenge>("POST", "/v1/challenges", options, options.cohort ? { "x-pact-cohort": options.cohort } : {}),
   submitAnswers: (challengeId: string, answers: string[], timingsMs: number[], cohort?: string) =>
@@ -133,4 +170,8 @@ export const api = {
       replayed?: boolean;
     }>("POST", "/v1/authz/explain", { token }),
   stats: (family: "mdg-v1" | "imu-v1" = "mdg-v1") => request<Stats>("GET", `/v1/stats?family=${family}`),
+  startAgentRun: (model: string, frames: 1 | 4 | 8) =>
+    request<{ runId: string; status: "queued" }>("POST", "/v1/agent-runs", { model, frames }),
+  getAgentRun: (runId: string, options: { replay?: boolean } = {}) =>
+    request<AgentRun>("GET", `/v1/agent-runs/${runId}${options.replay ? "?replay=1" : ""}`),
 };
