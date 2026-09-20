@@ -9,6 +9,7 @@ import argparse
 import json
 import os
 import sys
+import time
 import urllib.error
 import urllib.request
 
@@ -145,8 +146,31 @@ def main() -> int:
     )
 
     if not args.no_agent:
-        status, _ = request(args.api, "POST", "/v1/agent-runs", {"frames": 1})
-        check("agent route", status in {202, 501})
+        if args.local:
+            status, fallback = request(args.api, "POST", "/v1/agent-runs", {"frames": 1})
+            check("agent local fallback", status == 501 and fallback.get("error", {}).get("code") == "cloud_only")
+        else:
+            status, queued = request(args.api, "POST", "/v1/agent-runs", {"frames": 1})
+            check("agent queued", status == 202 and bool(queued.get("runId")))
+            final: dict = {}
+            if status == 202:
+                run_id = str(queued["runId"])
+                deadline = time.monotonic() + 120
+                while time.monotonic() < deadline:
+                    time.sleep(1.5)
+                    poll_status, final = request(args.api, "GET", f"/v1/agent-runs/{run_id}")
+                    if poll_status != 200 or final.get("status") in {"done", "error"}:
+                        status = poll_status
+                        break
+                check(
+                    "agent run done",
+                    status == 200
+                    and final.get("status") == "done"
+                    and len(final.get("rounds", [])) == 3
+                    and all(round_result.get("frameUrls") for round_result in final["rounds"]),
+                )
+                if final.get("status") == "error":
+                    print(f"agent infra result (excluded from scoring): {final.get('error', 'unknown')}")
     return 1 if failures else 0
 
 

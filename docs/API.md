@@ -80,6 +80,8 @@ Query `?family=mdg-v1|imu-v1` (default `mdg-v1`). For `imu-v1`, `"chance": null`
 ### `POST /v1/agent-runs` (Phase 3)
 Body: `{"model": "nova-2-lite", "frames": 4}`. `model` must be an alias in `AGENT_MODELS`; `frames` ∈ {1, 4, 8}.
 - **202** `{"runId": "run_…", "status": "queued"}` · 400 `bad_model`/`bad_frames` · 429 `daily_cap` · 501 `cloud_only` (local)
+- **503** `agent_unavailable` if Lambda does not accept the asynchronous worker invocation; the run is marked as an
+  infrastructure error and is not counted as an agent attempt.
 
 ### `GET /v1/agent-runs/{runId}` → 200
 ```json

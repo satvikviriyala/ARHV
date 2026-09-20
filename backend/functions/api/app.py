@@ -1,18 +1,32 @@
-"""Public API Lambda: challenge generation, verification, stats and async-route stubs."""
+"""Public API Lambda: challenge generation, verification, stats and async red-team runs."""
 
 from __future__ import annotations
 
 import base64
 import binascii
+import json
+import os
 import secrets
 import time
+from functools import lru_cache
 from typing import Any
 
+import boto3
 from pact_core import config, http, ids, imu, keys, log, mdg, stats, store, tokens
 
 
 def _now() -> int:
     return int(time.time())
+
+
+@lru_cache(maxsize=1)
+def _lambda_client():
+    return boto3.client("lambda", region_name=os.environ.get("AWS_REGION", "us-east-1"))
+
+
+@lru_cache(maxsize=1)
+def _s3_client():
+    return boto3.client("s3", region_name=os.environ.get("AWS_REGION", "us-east-1"))
 
 
 def _body_too_large(event: dict[str, Any]) -> bool:
@@ -218,8 +232,109 @@ def health(_event: dict[str, Any], _params: dict[str, str] | None = None) -> dic
     )
 
 
-def not_implemented(_event: dict[str, Any], _params: dict[str, str] | None = None) -> dict:
-    raise http.ApiError(501, "not_implemented", "This route is not implemented in the current sprint")
+def start_agent_run(event: dict[str, Any], _params: dict[str, str] | None = None) -> dict:
+    if config.LOCAL_DEV:
+        raise http.ApiError(501, "cloud_only", "Run `make bench BACKEND=ollama` locally")
+    body = http.parse_json(event)
+    aliases = config.agent_aliases()
+    model = str(body.get("model") or next(iter(aliases), ""))
+    if model not in aliases:
+        raise http.ApiError(400, "bad_model", "Unknown red-team model alias")
+    frames = body.get("frames", 4)
+    if isinstance(frames, bool) or not isinstance(frames, int) or frames not in config.AGENT_FRAME_CHOICES:
+        raise http.ApiError(400, "bad_frames", "frames must be one of 1, 4, or 8")
+
+    now = _now()
+    if not store.take_agent_run_slot(cap=config.agent_runs_daily_cap(), now=now):
+        raise http.ApiError(429, "daily_cap", "The daily red-team run limit has been reached")
+    run_id = ids.new_id("run")
+    store.create_run(
+        {
+            "runId": run_id,
+            "status": "queued",
+            "model": model,
+            "modelId": aliases[model],
+            "frames": frames,
+            "progress": 0,
+            "rounds": [],
+            "passed": False,
+            "roundsCorrect": 0,
+            "error": None,
+            "createdAt": now,
+            "ttl": now + config.RECORD_TTL_S,
+        }
+    )
+    try:
+        worker_name = os.environ["WORKER_FUNCTION_NAME"]
+        response = _lambda_client().invoke(
+            FunctionName=worker_name,
+            InvocationType="Event",
+            Payload=json.dumps({"runId": run_id}).encode("utf-8"),
+        )
+        if int(response.get("StatusCode", 0)) != 202:
+            raise RuntimeError("worker invocation was not accepted")
+    except Exception as exc:
+        message = f"queue_error: {type(exc).__name__}"
+        store.update_run(run_id, status="error", error=message, finishedAt=_now())
+        log.log_event("agent_run_error", runId=run_id, error=message)
+        raise http.ApiError(503, "agent_unavailable", "The red-team worker could not be queued") from exc
+    log.log_event("agent_run_queued", runId=run_id, model=model, frames=frames)
+    return http.ok({"runId": run_id, "status": "queued"}, 202)
+
+
+def _public_agent_run(run: dict[str, Any]) -> dict[str, Any]:
+    status = str(run.get("status", "queued"))
+    public = {key: value for key, value in run.items() if key not in {"PK", "SK", "ttl", "rounds"}}
+    rounds: list[dict[str, Any]] = []
+    for item in run.get("rounds") or []:
+        round_result = dict(item)
+        frame_keys = round_result.pop("frameKeys", [])
+        if frame_keys:
+            bucket = os.environ["ARTIFACTS_BUCKET"]
+            round_result["frameUrls"] = [
+                _s3_client().generate_presigned_url(
+                    "get_object",
+                    Params={"Bucket": bucket, "Key": str(frame_key)},
+                    ExpiresIn=900,
+                )
+                for frame_key in frame_keys
+            ]
+        if status != "done":
+            round_result.pop("truth", None)
+            round_result.pop("correct", None)
+        rounds.append(round_result)
+    public["rounds"] = rounds
+    return public
+
+
+def _agent_replay(run: dict[str, Any]) -> dict[str, Any] | None:
+    challenge_id = str(run.get("challengeId", ""))
+    if not challenge_id:
+        return None
+    item = store.table().get_item(Key={"PK": f"CH#{challenge_id}", "SK": "META"}).get("Item")
+    if not item or not item.get("seedHex"):
+        return None
+    return mdg.generate_challenge(bytes.fromhex(str(item["seedHex"])))["public"]
+
+
+def get_agent_run(event: dict[str, Any], params: dict[str, str]) -> dict:
+    run_id = params.get("runId", "")
+    if not ids.RUN_ID_RE.fullmatch(run_id):
+        raise http.ApiError(404, "not_found", "Agent run not found")
+    run = store.get_run(run_id)
+    if not run:
+        raise http.ApiError(404, "not_found", "Agent run not found")
+    result = _public_agent_run(run)
+    query = event.get("queryStringParameters") or {}
+    if run.get("status") == "done" and query.get("replay") == "1":
+        replay = _agent_replay(run)
+        if replay is not None:
+            result["replay"] = replay
+    return http.ok(result)
+
+
+def handoff_not_implemented(_event: dict[str, Any], _params: dict[str, str] | None = None) -> dict:
+    raise http.ApiError(501, "not_implemented", "Phone handoff is not implemented yet")
 
 
 ROUTES = {
@@ -227,10 +342,10 @@ ROUTES = {
     "POST /v1/challenges": create_challenge,
     "POST /v1/challenges/{challengeId}/answers": answer_challenge,
     "GET /v1/stats": get_stats,
-    "POST /v1/agent-runs": not_implemented,
-    "GET /v1/agent-runs/{runId}": not_implemented,
-    "POST /v1/handoffs": not_implemented,
-    "GET /v1/handoffs/{handoffId}": not_implemented,
+    "POST /v1/agent-runs": start_agent_run,
+    "GET /v1/agent-runs/{runId}": get_agent_run,
+    "POST /v1/handoffs": handoff_not_implemented,
+    "GET /v1/handoffs/{handoffId}": handoff_not_implemented,
 }
 
 

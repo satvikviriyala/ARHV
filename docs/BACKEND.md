@@ -197,8 +197,11 @@ Log `account_token_minted`. Return 200 `{"token", "expiresIn": 120, "assurance":
 "dailyQuota": 2}`.
 
 ### `functions/agent_worker/app.py` — `handler({"runId": …}, context)`
-Full flow in `docs/REDTEAM_AGENT.md §4`. Phase 1 ships a stub that sets the run to `error: not_implemented`
-so the template deploys; Phase 3 implements it.
+Implements the full flow in `docs/REDTEAM_AGENT.md §4`: it claims only queued runs, creates the same server-side
+`mdg-v1` challenge, uploads K consecutive 3× PNG frames per round to S3, calls a fresh Strands agent for each
+round, records progress, scores with `mdg.check_answers`, and records the `agent:<alias>:k<K>` stats cohort. Model
+and infrastructure failures set `status=error` and do not record stats; stored run data contains metrics and answers
+needed by the Lab, never seeds or raw frame bytes.
 
 ## 4. Dependencies (pinned where it matters)
 | Where | requirements.txt |
