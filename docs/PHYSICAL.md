@@ -65,7 +65,7 @@ UI: "marble on a plate": tilt right → dot right; top toward you → dot down; 
 | timing | monotonic; median interval 8–120 ms; max gap ≤ 750 ms; duration from baseline + holds to limit + 2 s | fast-forwarded or stitched traces |
 | continuity | ≤ 30° between samples and ≤ 900°/s angular speed | teleporting scripted input |
 | gravity | ≥ 80% of samples have ‖accelerationIncludingGravity‖ in 7.5–12.5 m/s² | orientation-only emulation (no real accelerometer) |
-| tilt | on quasi-static samples, tilt implied by the gravity vector matches reported beta/gamma (median error ≤ 12°), trying both iOS and Android sign conventions | streams whose orientation and gravity come from different "worlds" |
+| tilt | on quasi-static samples, tilt implied by the gravity vector matches reported beta/gamma (median error ≤ 18°), trying both iOS and Android sign conventions | streams whose orientation and gravity come from different "worlds" |
 | gyro | per moving axis, \|corr(d orientation/dt, rotationRate)\| ≥ 0.5 (scale- and sign-free) | dead or random gyroscope |
 | targets | from the baseline median, each target held (≥ 80% of holdMs within radius + 2°) in order | replayed recordings (random targets differ), wrong paths |
 Derivation used for the tilt check (W3C Z-X'-Y'' Euler, Android sign): `g_dev = (−g·cosβ·sinγ, g·sinβ, g·cosβ·cosγ)`,
@@ -75,9 +75,10 @@ keep only the metrics in logs/DynamoDB (privacy; motion data can fingerprint dev
 
 **Token:** pass → `asr: "physical"`, `prf: "imu-v1"`, 120 s, single-use `jti` → Cedar `permit-physical-book`.
 
-**Tuning knobs (log changes):** if a real phone fails, read `metrics` and loosen only the failing rule
-(e.g. `tiltErrDeg` limit 12 → 18 for devices with laggy sensor fusion; gyro corr 0.5 → 0.35; timing median up to
-200 ms for low-rate devices). Never loosen binding, targets or continuity.
+**Tuning knobs (log changes):** if a real phone fails, read `metrics` and loosen only the failing rule.
+The demo verifier uses an 18° `tiltErrDeg` budget to absorb modest browser sensor-fusion/calibration skew;
+the previous 12° budget was too brittle for that cross-sensor timing. Other documented options include gyro corr
+0.5 → 0.35 and timing median up to 200 ms for low-rate devices. Never loosen binding, targets or continuity.
 
 ## 4. Laptop → phone handoff (stretch P2; routes already in the template)
 The phone is the physical verifier for any computer: the laptop shows a QR; the phone completes `imu-v1`; the

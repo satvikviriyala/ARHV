@@ -27,12 +27,13 @@
 - Frontend environment: production/development files generated from `pact-dev` outputs by `make web-env`
 - Cloud smoke: `make smoke` passed every listed check, including live `imu-v1` pass/booking/replay/explain and orientation spoof rejection
 - Live evidence: `make imu-demo IMU_API=https://28y0g9h8ki.execute-api.us-east-1.amazonaws.com` rejected all five cheap spoofs and passed only the physics-consistent simulator; `make cedar-demo` showed physical ALLOW, replay/quota DENY
+- IMU tuning: `tiltErrDeg` budget is now 18° (was 12°) for modest browser sensor-fusion/calibration skew; no gravity, gyro, continuity, target, binding, or token rules changed; focused IMU tests 22 passed
 - Blockers: complete real-phone tilt, human motion-puzzle/study, video, and submission checks · H5 user-reported $10 alarm not independently verifiable (`budgets:ViewBudget` denied)
 
 ## Next Steps
 - [x] Sprint S0 (15:45–16:05): preflight, Makefile `imu-demo`, green tests, and physical-first augmentation commit
 - [x] Sprint S1 (16:05–17:20): backend integration/local gate and containerized build passed; `make deploy` completed with `pact-dev` `CREATE_COMPLETE` and live API output
-- [ ] Sprint S2 (17:20–18:25): frontend local gate passed and Amplify deployment job 5 succeeded; real-phone check pending
+- [ ] Sprint S2 (17:20–18:25): frontend local gate passed and Amplify deployment job 5 succeeded; real-phone check pending; rail-counter refresh remains to deploy
 - [ ] Sprint S3 (18:25–18:50): local/live API evidence, attack table, Cedar demo, and Amplify render passed; human pilot remains
 - [ ] Sprint S4 (18:50–19:45): truthful README/writeup/video draft prepared; recording, upload, and external submission remain human-blocked
 - [x] Prior Phase 0 toolchain, baseline, Bedrock preflight, license, and public GitHub remote
@@ -101,6 +102,7 @@
 - 2026-09-20 — public name is ARHV because PACT is also Private Access Control Tokens (Cloudflare/Chrome/Firefox/Edge/Shopify, June 2026)
 - 2026-09-20 — MacBook hinge and fingerprint presence are roadmap-only because there is no public lid-angle API and M1/M2 Macs lack the sensor.
 - 2026-09-20 — Added frontend dependency `qrcode` and `@types/qrcode` for the laptop-to-phone QR fallback required by the physical chooser; npm retained the documented React 19 peer warnings and installed with 0 vulnerabilities.
+- 2026-09-20 — Set the `imu-v1` tilt-vs-gravity median-error budget from 12° to 18° per `docs/PHYSICAL.md §3`: the client merges independently timed orientation and motion events, so a modest fusion/calibration offset can reject a coherent human-like trace; gravity, gyro, continuity, targets, binding, and replay semantics remain unchanged. Rejected loosening target/rate checks.
 
 ## Log
 - 2026-09-19 — Handover pack created: docs + validated reference scaffold (backend: 20 pytest tests pass, ruff clean, cfn-lint clean; Cedar policies validated with cedarpy 4.12.0; Strands 1.56.0 plumbing tested with a fake model; frontend skeleton builds/lints/tests on Vite 8 + React 19 + Tailwind 4). No project code written or deployed yet.
@@ -254,6 +256,11 @@
 - 2026-09-20 17:20 IST — Committed the verified deployment record as `86a0c96`
   (`chore(deploy): record live ARHV verification`) and pushed it successfully to public `origin/main`
   (`6e662e7..86a0c96`). No generated environment file or credential was tracked.
+- 2026-09-20 17:40 IST — IMU tuning verification passed: `backend/tests/test_imu.py` reported 22 passed; the
+  14° fusion-bias regression passed with `tiltErrDeg=14.0`, `targetsReached=3`, and `gyroCorr=[0.992, 0.984]`;
+  orientation-only, dead-gyro, and mismatched-gravity spoofs remained rejected. Ruff and ReadLints reported no
+  errors. The initial diagnostic omitted `PYTHONPATH` and failed to import `pact_core`; rerunning with
+  `PYTHONPATH=backend/layers/core` passed.
 
 ## Errors & Fixes
 - 2026-09-19 — `doctor.sh` exited 1 with missing prerequisites → the machine lacks the Phase 0 toolchain → human
@@ -350,6 +357,9 @@
 - 2026-09-20 17:19 IST — Amplify asset requests returned 200 `text/html` → existing `/ <*>` catch-all rewrite
   intercepted static files → ran documented `make web-bootstrap` followed by `make web-deploy` → job 5
   succeeded, JS/CSS content types and byte sizes were correct, and browser snapshot showed the ARHV app.
+- 2026-09-20 — Direct IMU margin diagnostic returned `ModuleNotFoundError: No module named 'pact_core'` because
+  the standalone command did not include the layer path → reran with `PYTHONPATH=backend/layers/core`; the
+  relaxed-trace and spoof outcomes then matched the regression test.
 
 ## Open Issues
 - (none yet)

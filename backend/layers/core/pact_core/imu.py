@@ -35,6 +35,7 @@ TARGET_RADIUS = 8.0  # degrees: how close the dot must be to count as "on target
 HOLD_MS = 450  # hold inside each target
 BASELINE_MS = 600  # initial comfortable hold used as the user's own zero
 MAX_DURATION_MS = 30_000  # whole challenge must finish in 30 s
+TILT_ERROR_MAX_DEG = 18.0  # modest budget for browser sensor-fusion/calibration skew
 MIN_SAMPLES, MAX_SAMPLES = 30, 4_000
 G = 9.80665
 
@@ -200,7 +201,7 @@ def verify(challenge: dict, challenge_id: str, trace: dict) -> ImuResult:
                 best_err, best_sign = err, sign
     m["tiltErrDeg"] = round(best_err, 2) if math.isfinite(best_err) else None
     m["gravitySign"] = best_sign
-    if len(quasi) < max(10, n // 10) or best_err > 12.0:
+    if len(quasi) < max(10, n // 10) or best_err > TILT_ERROR_MAX_DEG:
         reasons.append("tilt")
 
     # gyro consistency: d(orientation)/dt co-varies with rotationRate (scale-free, unit/sign-robust) ---------

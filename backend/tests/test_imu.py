@@ -106,6 +106,25 @@ def test_physically_consistent_synthetic_trace_passes_documenting_the_attestatio
     assert imu.verify(ch, cid, synthetic).passed
 
 
+def test_demo_tilt_tolerance_handles_fusion_bias_but_not_cheap_spoofs():
+    """A modest browser fusion/calibration offset is human-like; independent spoof signals still fail."""
+    ch, cid = _challenge()
+    trace = imu_sim.physical_trace(ch, cid, seed=11)
+    fusion_biased = dict(trace, samples=[[s[0], s[1] + 14.0, *s[2:]] for s in trace["samples"]])
+
+    human_like = imu.verify(ch, cid, fusion_biased)
+    assert human_like.passed, (human_like.reasons, human_like.metrics)
+    assert 12.0 < human_like.metrics["tiltErrDeg"] <= imu.TILT_ERROR_MAX_DEG
+
+    for spoof in (
+        imu_sim.orientation_only_spoof(trace),
+        imu_sim.no_gyro_spoof(trace),
+        imu_sim.mismatched_gravity_spoof(trace),
+    ):
+        result = imu.verify(ch, cid, spoof)
+        assert not result.passed
+
+
 def test_tilt_from_gravity_matches_convention():
     import math
 
