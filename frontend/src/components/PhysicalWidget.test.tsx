@@ -88,7 +88,7 @@ describe("PhysicalWidget mobile sensor path", () => {
       createdAt: 1_789_999_999,
     };
     vi.spyOn(api, "createChallenge").mockResolvedValue(challenge);
-    vi.spyOn(api, "submitTrace").mockResolvedValue({
+    const submitTrace = vi.spyOn(api, "submitTrace").mockResolvedValue({
       passed: true,
       token: "fresh-physical-token",
       assurance: "physical",
@@ -110,10 +110,13 @@ describe("PhysicalWidget mobile sensor path", () => {
     render(<MobileFlow />);
 
     fireEvent.click(await screen.findByRole("button", { name: "Complete checkpoint 1" }));
+    expect(submitTrace).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole("button", { name: "Complete checkpoint 2" }));
+    expect(submitTrace).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole("button", { name: "Complete checkpoint 3" }));
 
     await waitFor(() => expect(onVerified).toHaveBeenCalledWith("fresh-physical-token"));
+    expect(submitTrace).toHaveBeenCalledTimes(1);
     expect(await screen.findByText("Journey confirmed")).toBeTruthy();
     expect(api.book).toHaveBeenCalledWith("fresh-physical-token");
     expect(screen.queryByText(/suspicious|bot|agent|moving shape|checkpoint/i)).toBeNull();

@@ -70,6 +70,8 @@ export default function TiltChallenge({
     rec.start();
     setStatus("running");
     let lastBuzz = 0;
+    let processedSamples = 0;
+    let firstSampleMs: number | null = null;
     const tick = () => {
       if (!mounted.current || currentRun !== runId.current || completed.current || recorder.current !== rec) return;
       const t = rec.elapsedMs();
@@ -86,9 +88,13 @@ export default function TiltChallenge({
         setStatus("timeout");
         return;
       }
-      const o = rec.latest();
-      if (o) {
-        const s = tracker.update(t, o.beta, o.gamma);
+      const sampleCount = rec.sampleCount();
+      while (processedSamples < sampleCount) {
+        const reading = rec.sampleAt(processedSamples);
+        processedSamples += 1;
+        if (!reading) continue;
+        firstSampleMs ??= reading.tMs;
+        const s = tracker.update(reading.tMs - firstSampleMs, reading.beta, reading.gamma);
         setState(s);
         if (s.index > lastBuzz) {
           lastBuzz = s.index;

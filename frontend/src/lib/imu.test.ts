@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
-import { angDiff, TargetTracker } from "./imu";
+import { describe, expect, it, vi } from "vitest";
+import { angDiff, ImuRecorder, TargetTracker } from "./imu";
 
 const challenge = {
   baselineMs: 600,
@@ -39,6 +39,38 @@ describe("TargetTracker", () => {
     tr.update((t += 100), 30, 0); // radius + 2 boundary
     const done = tr.update(t + 360, 30, 0); // 80% of the server hold
     expect(done.phase).toBe("done");
+  });
+});
+
+describe("ImuRecorder", () => {
+  it("only exposes complete motion-plus-orientation samples to the tracker", () => {
+    const recorder = new ImuRecorder();
+    const now = vi.spyOn(performance, "now");
+    now.mockReturnValue(100);
+    recorder.start();
+
+    const orientation = new Event("deviceorientation");
+    Object.defineProperties(orientation, {
+      alpha: { value: 12.3 },
+      beta: { value: 24.2 },
+      gamma: { value: -8.4 },
+    });
+    window.dispatchEvent(orientation);
+
+    expect(recorder.latest()).toEqual({ beta: 24.2, gamma: -8.4 });
+    expect(recorder.latestComplete()).toBeNull();
+
+    now.mockReturnValue(116.7);
+    const motion = new Event("devicemotion");
+    Object.defineProperties(motion, {
+      accelerationIncludingGravity: { value: { x: 1, y: 2, z: 9.5 } },
+      rotationRate: { value: { alpha: 0.1, beta: 0.2, gamma: 0.3 } },
+    });
+    window.dispatchEvent(motion);
+
+    expect(recorder.latestComplete()).toEqual({ tMs: 16.7, beta: 24.2, gamma: -8.4 });
+    recorder.stop();
+    now.mockRestore();
   });
 });
 

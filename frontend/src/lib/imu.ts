@@ -17,6 +17,7 @@ export type ImuChallenge = {
 export type ImuSample = [number, number, number, number | null, number, number, number, number, number, number];
 export type ImuTrace = { challengeId: string; nonce: string; samples: ImuSample[] };
 export type MotionPermission = "granted" | "denied" | "unsupported";
+export type ImuReading = { tMs: number; beta: number; gamma: number };
 
 const r1 = (x: number | null | undefined): number => Math.round((x ?? 0) * 10) / 10;
 
@@ -89,6 +90,16 @@ export class ImuRecorder {
   /** Current (beta, gamma) for the UI, or null before the first orientation event. */
   latest(): { beta: number; gamma: number } | null {
     return this.orientation ? { beta: this.orientation.beta, gamma: this.orientation.gamma } : null;
+  }
+
+  /** Latest complete sample that will actually be sent to the server verifier. */
+  latestComplete(): ImuReading | null {
+    return this.sampleAt(this.data.length - 1);
+  }
+
+  sampleAt(index: number): ImuReading | null {
+    const sample = this.data[index];
+    return sample ? { tMs: sample[0], beta: sample[1], gamma: sample[2] } : null;
   }
 
   elapsedMs(): number {
