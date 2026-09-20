@@ -11,7 +11,7 @@
 
 ## Snapshot
 - Deadline: Sun 20 Sep 2026 20:00 IST; submit by 19:45 IST
-- Current phase: Sprint S0
+- Current phase: Sprint S1
 - Milestones: M1 human-pass-live [ ] · M2 AI-fails-live [ ] · Early submission [ ] · Final submission [ ]
 - Repo URL: https://github.com/satvikviriyala/ARHV (public; main)
 - Web URL (Amplify): https://main.d1i6xn1rxjcnkk.amplifyapp.com (user-verified metadata for `pact-web`, appId `d1i6xn1rxjcnkk`; live browser testing found the root shell but asset paths serving that shell as `text/html`, and a later fresh navigation returned 401 Basic-auth, so this remains an unverified live-success claim)
@@ -22,12 +22,12 @@
 - License: MIT; copyright holder confirmed as `Venkata Satya Satvik Viriyala`; task 0.3 commit `3e18dbf5f4ebffcbaad61cdd7f9daefc6823c700`
 - Baseline: backend 20 passed; ruff/format/eslint/tsc clean; frontend build plus 2 tests passed; Cedar 6-row demo and SAM validation passed
 - Human pass rate (study cohort): — · Best agent pass rate: —
-- Last green commit: 8f6318a (`docs(phase-0): record exact deadline and gate status`)
+- Last green commit: d56bf89 (`feat: physical-first ARHV augmentation (imu-v1)`)
 - Amplify artifact check: local `frontend/dist` has root `index.html` and `assets/`; a locally verified zip built from `dist` has those entries at its root; the live deployment remains unverified
 - Blockers: H0 IAM AdministratorAccess for `liv28`; disable Amplify branch/app access control or password protection for the public demo, upload a root-correct zip, wait for `Succeed`, and recheck JS/CSS content types plus `#root` · H5 user-reported $10 alarm not independently verifiable (`budgets:ViewBudget` denied)
 
 ## Next Steps
-- [ ] Sprint S0 (15:45–16:05): preflight, Makefile `imu-demo`, green tests, and physical-first augmentation commit
+- [x] Sprint S0 (15:45–16:05): preflight, Makefile `imu-demo`, green tests, and physical-first augmentation commit
 - [ ] Sprint S1 (16:05–17:20): backend integration, deploy, and smoke test
 - [ ] Sprint S2 (17:20–18:25): frontend physical and motion paths, Amplify deploy, and real-phone test
 - [ ] Sprint S3 (18:25–18:50): live evidence, attack table, Cedar demo, report, and pilot
@@ -172,6 +172,10 @@
 - 2026-09-20 15:56 IST — Sprint S0 started. `aws sts get-caller-identity` confirmed `liv28`; safe read-only
   IAM, Amplify, and Budgets checks were denied, so H0 remains human-blocked. Snapshot, sprint Next Steps, and
   the physical-first naming/roadmap decisions were updated before code work.
+- 2026-09-20 15:59 IST — Sprint S0 gate passed: `make test` reported backend 44 passed and frontend 4 passed;
+  `make imu-demo` printed the six-row attack table with five rejected attacks and the physics-consistent simulator
+  passed; `git diff --check` and ReadLints were clean. Committed as `d56bf89` (`feat: physical-first ARHV
+  augmentation (imu-v1)`); moving to S1 backend integration.
 
 ## Errors & Fixes
 - 2026-09-19 — `doctor.sh` exited 1 with missing prerequisites → the machine lacks the Phase 0 toolchain → human
