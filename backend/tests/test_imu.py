@@ -1,3 +1,4 @@
+import math
 import os
 import secrets
 import sys
@@ -123,6 +124,25 @@ def test_demo_tilt_tolerance_handles_fusion_bias_but_not_cheap_spoofs():
     ):
         result = imu.verify(ch, cid, spoof)
         assert not result.passed
+
+
+def test_noisy_low_rate_mobile_trace_passes_with_documented_limits():
+    """A lower-rate browser stream with modest fusion noise remains a coherent physical proof."""
+    ch, cid = _challenge()
+    trace = imu_sim.physical_trace(ch, cid, seed=23)
+    samples = []
+    for i, sample in enumerate(trace["samples"][::9]):
+        row = list(sample)
+        row[0] = i * 150.0
+        row[1] += 1.5 * math.sin(i * 0.7)
+        row[2] += 1.5 * math.cos(i * 0.53)
+        samples.append(row)
+
+    result = imu.verify(ch, cid, dict(trace, samples=samples))
+    assert result.passed, (result.reasons, result.metrics)
+    assert result.metrics["medianDtMs"] == 150.0
+    assert result.metrics["tiltErrDeg"] < imu.TILT_ERROR_MAX_DEG
+    assert result.metrics["targetsReached"] == imu.N_TARGETS
 
 
 def test_tilt_from_gravity_matches_convention():

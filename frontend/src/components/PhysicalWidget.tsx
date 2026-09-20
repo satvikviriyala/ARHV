@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router";
 import { api, ApiError } from "../lib/api";
 import type { ImuChallenge, ImuTrace } from "../lib/imu";
-import { reasonMessage } from "../lib/reasons";
+import { reasonMessage, verificationDisposition } from "../lib/reasons";
 import TiltChallenge from "./TiltChallenge";
 
 type Props = {
@@ -97,14 +97,25 @@ export default function PhysicalWidget({ cohort = "public", onVerified, onFallba
         >
           Spot the moving shape instead
         </button>
+        <Link
+          to="/account"
+          className="text-sm text-muted underline decoration-accent underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        >
+          Can&apos;t use motion? Verify with your account instead.
+        </Link>
       </div>
     );
   }
   if (status === "failed") {
+    const disposition = verificationDisposition(reasons, metrics);
     return (
       <div className="flex flex-col items-center gap-4 rounded-2xl border border-bad bg-bad/5 p-5 text-center" role="alert">
         <p className="font-mono text-xs tracking-[0.18em] text-bad">VERIFICATION REQUIRED</p>
-        <p className="text-lg font-semibold text-bad">Suspicious activity detected. Please try human verification again.</p>
+        <p className="text-lg font-semibold text-bad">
+          {disposition === "suspicious"
+            ? "Suspicious activity detected. Please try human verification again."
+            : "Motion needs another try. Your activity was not labeled suspicious."}
+        </p>
         <p className="text-sm text-muted">{reasonMessage(reasons)}</p>
         <button
           ref={retryButton}

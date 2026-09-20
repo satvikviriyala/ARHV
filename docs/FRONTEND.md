@@ -183,14 +183,17 @@ idle ─start→ loading (POST /v1/challenges {family:"imu-v1"}) ─ok→ tilt (
 submitting ─200 passed→ passed(token, metrics) → onVerified(token)
 submitting ─200 failed→ failed(reasons, metrics) ─"Try again"→ loading (new challenge; old one is consumed)
 any 409/410 → error("This check expired. Start a new one.") ; network → error(retry)
-onUnsupported / permission denied → fallback card: "Motion sensors aren't available here" + "Spot the shape instead"
+permission denied → keep the challenge and show "Enable motion sensors and retry" from a fresh user gesture, plus
+"Use the moving-shape alternative"; unavailable/no complete samples → fallback card: "Motion sensors aren't available
+here" + "Spot the shape instead" + the account path. The recorder allows 3 seconds for the first complete
+motion+orientation sample before declaring sensors unavailable.
 ```
 Failure copy (map `reasons`, most specific first):
 | reasons contain | Message |
 |---|---|
 | `targets` | "You didn't reach all three rings in order. Try again: hold the dot inside each ring until it fills." |
 | `timing` | "That took too long or the sensor stream stalled. Try again and keep the page open." |
-| `gravity`, `tilt`, `gyro`, `continuity` | "Your device's sensors didn't behave like a phone moving in a hand. If you're emulating sensors, that's exactly what we check." |
+| `gravity`, `tilt`, `gyro`, `continuity` | "The motion reading was ambiguous this time. Keep the phone moving gently and try the fresh check again." |
 | `binding`, `size`, `format` | "Something went wrong with this check. Start a new one." |
 Show the `metrics` only in the DevPanel (not in the main card).
 
@@ -199,9 +202,10 @@ counter summary → PhysicalWidget → `api.book(token)` → BookingCard (+ DevP
 S5): the widget sends `{family: "imu-v1", handoffId, phoneKey}` and, on pass, shows **"Done. Return to your
 computer."** with no booking on the phone.
 **Platform notes:** sensors need HTTPS (Amplify URL; never plain `http://` LAN URLs). iOS: if the user taps
-"Don't Allow", Safari may not ask again for this site until it's restarted, so show the motion-puzzle fallback.
-Android Chrome streams without a prompt. In-app browsers (WhatsApp/Instagram) may block sensors: show "Open in
-Chrome/Safari". Keep the page in portrait (the dot uses device axes).
+"Don't Allow", Safari may not ask again for this site until it's restarted, so keep the explicit retry and show
+the motion-puzzle/account fallback. Android Chrome streams without a prompt. In-app browsers (WhatsApp/Instagram)
+may block sensors: show "Open in Chrome/Safari". Keep the page in portrait (the dot uses device axes). The client
+uses the server's documented `radius + 2°` and `80%` hold slack for noisy delivery; the server remains authoritative.
 **Tests (Vitest):** keep `lib/imu.test.ts`; add `reasons.test.ts` (reasons → message mapping, most specific first)
 and, if time, `PhysicalWidget.test.tsx` with a stubbed API and a stubbed `TiltChallenge` that calls `onDone`.
 **Dependency:** `npm install qrcode @types/qrcode` (log it in `MEMORY.md › Decisions`).

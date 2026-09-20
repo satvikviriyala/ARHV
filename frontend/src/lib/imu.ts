@@ -46,7 +46,6 @@ export class ImuRecorder {
   private t0 = 0;
   private orientation: { alpha: number | null; beta: number; gamma: number } | null = null;
   private running = false;
-  private motionEvents = 0;
 
   private readonly onOrientation = (e: DeviceOrientationEvent) => {
     if (e.beta === null || e.gamma === null) return;
@@ -54,7 +53,6 @@ export class ImuRecorder {
   };
 
   private readonly onMotion = (e: DeviceMotionEvent) => {
-    this.motionEvents += 1;
     if (!this.running || !this.orientation) return;
     const g = e.accelerationIncludingGravity;
     const r = e.rotationRate;
@@ -97,9 +95,14 @@ export class ImuRecorder {
     return performance.now() - this.t0;
   }
 
-  /** True once motion events arrive; false after ~1.5 s means sensors are unavailable (desktop, blocked). */
+  /** True once a merged motion+orientation sample is captured. */
   hasMotion(): boolean {
-    return this.motionEvents > 0;
+    return this.data.length > 0;
+  }
+
+  /** Number of complete samples captured; useful for distinguishing permission from sensor delivery. */
+  sampleCount(): number {
+    return this.data.length;
   }
 
   trace(challenge: ImuChallenge): ImuTrace {
@@ -143,9 +146,10 @@ export class TargetTracker {
     if (!target) return { phase: "done", index: this.index, holdProgress: 1, offset };
     const dist = Math.hypot(offset.dBeta - target.dBeta, offset.dGamma - target.dGamma);
     let holdProgress = 0;
-    if (dist <= target.radius) {
+    // Match the server's documented sensor-noise slack. The server remains authoritative.
+    if (dist <= target.radius + 2) {
       this.holdStart ??= tMs;
-      holdProgress = Math.min(1, (tMs - this.holdStart) / target.holdMs);
+      holdProgress = Math.min(1, (tMs - this.holdStart) / (target.holdMs * 0.8));
       if (holdProgress >= 1) {
         this.index += 1;
         this.holdStart = null;

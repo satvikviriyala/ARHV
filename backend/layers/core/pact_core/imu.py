@@ -36,6 +36,8 @@ HOLD_MS = 450  # hold inside each target
 BASELINE_MS = 600  # initial comfortable hold used as the user's own zero
 MAX_DURATION_MS = 30_000  # whole challenge must finish in 30 s
 TILT_ERROR_MAX_DEG = 18.0  # modest budget for browser sensor-fusion/calibration skew
+MAX_MEDIAN_DT_MS = 200.0  # documented allowance for lower-rate mobile sensor delivery
+MIN_GYRO_CORR = 0.35  # documented allowance for noisy browser gyro streams
 MIN_SAMPLES, MAX_SAMPLES = 30, 4_000
 G = 9.80665
 
@@ -159,7 +161,7 @@ def verify(challenge: dict, challenge_id: str, trace: dict) -> ImuResult:
     m["dtJitterMs"] = round(math.sqrt(sum((d - mean_dt) ** 2 for d in dts) / len(dts)), 3)  # risk signal only
     min_duration = challenge["baselineMs"] + N_TARGETS * HOLD_MS * 0.8
     if (
-        not (8.0 <= med_dt <= 120.0)
+        not (8.0 <= med_dt <= MAX_MEDIAN_DT_MS)
         or max_gap > 750.0
         or not (min_duration <= duration <= challenge["maxDurationMs"] + 2000)
     ):
@@ -224,7 +226,7 @@ def verify(challenge: dict, challenge_id: str, trace: dict) -> ImuResult:
         if spread > 5.0:  # only judge axes that actually moved
             rs.append(abs(_pearson(rate, gyro)))
     m["gyroCorr"] = [round(r, 3) for r in rs]
-    if not rs or min(rs) < 0.5:
+    if not rs or min(rs) < MIN_GYRO_CORR:
         reasons.append("gyro")
 
     # targets, in order, each held for holdMs, relative to the user's own baseline ------------------------

@@ -12,6 +12,7 @@ import {
 // toward you -> dot moves down. The dot must rest inside each ring until the ring fills.
 const SCALE = 4.2; // px per degree of tilt
 const SIZE = 300; // px, square play area
+const SENSOR_STARTUP_GRACE_MS = 3000; // iOS/Android may deliver orientation after motion permission resolves
 
 type Props = {
   challenge: ImuChallenge;
@@ -30,7 +31,7 @@ export default function TiltChallenge({ challenge, onDone, onUnsupported, autoFo
 
   useEffect(() => () => recorder.current?.stop(), []);
   useEffect(() => {
-    if (autoFocus && status === "intro") startButton.current?.focus();
+    if (autoFocus && (status === "intro" || status === "denied")) startButton.current?.focus();
   }, [autoFocus, status]);
 
   async function start() {
@@ -49,7 +50,7 @@ export default function TiltChallenge({ challenge, onDone, onUnsupported, autoFo
     const tick = () => {
       if (!recorder.current) return;
       const t = rec.elapsedMs();
-      if (t > 1500 && !rec.hasMotion()) {
+      if (t > SENSOR_STARTUP_GRACE_MS && !rec.hasMotion()) {
         rec.stop();
         setStatus("no-sensors");
         onUnsupported?.();
@@ -89,13 +90,23 @@ export default function TiltChallenge({ challenge, onDone, onUnsupported, autoFo
     return (
       <div className="flex flex-col items-center gap-4 text-center">
         <p className="max-w-sm text-muted">{msg}</p>
-        {status === "intro" && (
+        {(status === "intro" || status === "denied") && (
           <button
             ref={startButton}
+            type="button"
             onClick={start}
             className="rounded-xl bg-accent px-6 py-3 font-semibold text-bg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
           >
-            Start physical check
+            {status === "denied" ? "Enable motion sensors and retry" : "Start physical check"}
+          </button>
+        )}
+        {status === "denied" && (
+          <button
+            type="button"
+            onClick={onUnsupported}
+            className="text-sm text-muted underline decoration-accent underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          >
+            Use the moving-shape alternative
           </button>
         )}
       </div>

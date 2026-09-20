@@ -28,6 +28,18 @@ describe("TargetTracker", () => {
     s = tr.update(t + 460, 51, -18);
     expect(s.phase).toBe("done");
   });
+
+  it("uses the server's sensor-noise slack for mobile delivery jitter", () => {
+    const tr = new TargetTracker({
+      baselineMs: 600,
+      targets: [{ dBeta: 20, dGamma: 0, radius: 8, holdMs: 450 }],
+    });
+    let t = 0;
+    for (; t <= 600; t += 100) tr.update(t, 0, 0);
+    tr.update((t += 100), 30, 0); // radius + 2 boundary
+    const done = tr.update(t + 360, 30, 0); // 80% of the server hold
+    expect(done.phase).toBe("done");
+  });
 });
 
 describe("angDiff", () => {
