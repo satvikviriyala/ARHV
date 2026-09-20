@@ -14,7 +14,7 @@
 - Current phase: Sprint S4
 - Milestones: M1 human-pass-live [ ] · M2 AI-fails-live [x] · Early submission [ ] · Final submission [ ]
 - Repo URL: https://github.com/satvikviriyala/ARHV (public; main)
-- Web URL (Amplify): https://main.d1i6xn1rxjcnkk.amplifyapp.com (`pact-web`, appId `d1i6xn1rxjcnkk`; deployment job 11 reported `SUCCEED`; sensor-only mobile bundle deployed)
+- Web URL (Amplify): https://main.d1i6xn1rxjcnkk.amplifyapp.com (`pact-web`, appId `d1i6xn1rxjcnkk`; deployment job 12 reported `SUCCEED`; immediate-success sensor-only mobile bundle deployed)
 - API URL: https://28y0g9h8ki.execute-api.us-east-1.amazonaws.com
 - Stack: pact-dev (us-east-1) — `UPDATE_COMPLETE`; worker fix deployed by `make deploy` on 2026-09-20
 - Bedrock models verified (alias=id): nova-2-lite=us.amazon.nova-2-lite-v1:0; nova-pro=us.amazon.nova-pro-v1:0; both Nova calls pass; Claude remains unverified/omitted and optional, with no Anthropic form submitted
@@ -22,14 +22,14 @@
 - License: MIT; copyright holder confirmed as `Venkata Satya Satvik Viriyala`; task 0.3 commit `3e18dbf5f4ebffcbaad61cdd7f9daefc6823c700`
 - Latest gate: backend 71 passed; frontend 18 passed; Ruff/format/ESLint/TypeScript clean; Cedar 7-row demo, SAM validation, and containerized SAM build passed
 - Human pass rate (study cohort): — · Best agent pass rate: —
-- Last green commit: e147f75 (`fix(web): keep mobile verification sensor-only`)
+- Last green commit: 677c6be (`fix(web): continue after mobile sensor pass`)
 - Amplify artifact check: local `frontend/dist` has root `index.html` and `assets/`; live root returned 200 `text/html`, JS returned 200 `text/javascript`, and deployed bundle contains the enable/retry and neutral motion-failure copy
 - Frontend environment: production/development files generated from `pact-dev` outputs by `make web-env`
 - Cloud smoke: final `make smoke` passed every listed check, including live `imu-v1` pass/booking/replay/explain,
   orientation spoof rejection, and asynchronous agent queue/poll completion
 - Live evidence: `make imu-demo IMU_API=https://28y0g9h8ki.execute-api.us-east-1.amazonaws.com` rejected all five cheap spoofs and passed only the physics-consistent simulator; `make cedar-demo` showed physical ALLOW, replay/quota DENY
 - IMU tuning: `tiltErrDeg` remains 18°; documented mobile limits now allow median delivery intervals through 200 ms and gyro correlation down to 0.35; client uses server `radius + 2°`/80%-hold slack and a 3 s startup grace; gravity, continuity, fresh targets, binding, replay, and token/Cedar rules are unchanged
-- Frontend refresh: `ARHV Rail` fictional route/date/class/quota flow defaults Bengaluru → Visakhapatnam, lists three fictional services, and contextualises verification as a quick presence check; `/phone` now stays sensor-only with neutral incomplete-signal and sensor-retry states, while booking success still navigates to `/booking/confirmed`; local lint, TypeScript, 18 Vitest tests, and production build passed
+- Frontend refresh: `ARHV Rail` fictional route/date/class/quota flow defaults Bengaluru → Visakhapatnam, lists three fictional services, and contextualises verification as a quick presence check; `/phone` now stays sensor-only with neutral incomplete-signal and sensor-retry states, and three completed rings submit immediately to verified booking; local lint, TypeScript, focused mobile tests (5), and production build passed
 - Local evidence: containerized SAM build passed; canonical local smoke hit the known host DynamoDB 404, then the Docker-network fallback passed health, both proof families, bookings, replay, stats, spoof, and agent-route checks; local IMU table and Cedar demo passed
 - Live evidence: `run_4b9ec1f6c8d3dc2a22f2c43b` returned 202 then `GET` status `done`, progress 3/3, 2/3
   rounds correct, and one presigned frame URL per round at K=1; browser Lab K=4 showed `AI FAILED (0/3)` with
@@ -39,7 +39,7 @@
 ## Next Steps
 - [x] Sprint S0 (15:45–16:05): preflight, Makefile `imu-demo`, green tests, and physical-first augmentation commit
 - [x] Sprint S1 (16:05–17:20): backend integration/local gate and containerized build passed; `make deploy` completed with `pact-dev` `CREATE_COMPLETE` and live API output
-- [x] Sprint S2 (17:20–18:25): frontend local gate passed and Amplify deployment job 11 succeeded with sensor-only mobile retry UX; real-phone check pending
+- [x] Sprint S2 (17:20–18:25): frontend local gate passed and Amplify deployment job 12 succeeded with immediate-success sensor-only mobile UX; real-phone check pending
 - [x] Sprint S3 (18:25–18:50): local/live API evidence, attack table, Cedar demo, Amplify render, and live async Lab passed; human pilot remains
 - [ ] Sprint S4 (18:50–19:45): truthful README/writeup/video draft prepared and pushed; recording, upload, and external submission remain human-blocked
 - [x] Booking-result UX: confirmation route/card, authorization failure state, fresh-challenge retry, focus management, and focused frontend tests
@@ -350,6 +350,15 @@
   the deployed page showed no suspicious, bot, agent, motion-puzzle, or account fallback copy. This was desktop browser
   sensor emulation, not real-phone evidence.
 
+ - 2026-09-20 19:34 IST — Root cause of the remaining mobile transition race: `TiltChallenge` stopped recording and delayed
+  `onDone` through an uncancelled timer, while `PhysicalWidget` accepted stale challenge loads/submissions; mobile also
+  still exposed the alternative button because its unsupported callback was present. Fix `677c6be` cancels stale
+  animation runs, submits the trace immediately after the third completed target, ignores stale responses, and hides
+  fallback UI on `/phone`. Focused Vitest (5), `npm run build`, `make lint`, `git diff --check`, and ReadLints passed;
+  pushed with Satvik Viriyala identity. Amplify job 12 is `SUCCEED`; live root/JS returned 200 with `text/javascript`,
+  and a fresh `/phone?deploy=12` browser snapshot showed only the sensor start/neutral guidance. No physical-phone pass
+  is inferred.
+
 ## Errors & Fixes
 - 2026-09-19 — `doctor.sh` exited 1 with missing prerequisites → the machine lacks the Phase 0 toolchain → human
   must install the listed tools; verification is pending a second doctor run.
@@ -472,6 +481,8 @@
 - 2026-09-20 19:03 IST — `make lint` flagged a useless timestamp assignment in the new tracker test → used the final timestamp expression without reassigning the loop variable → full lint passed.
 - 2026-09-20 19:04 IST — Canonical `make local-smoke` returned DynamoDB Local HTTP 404 because host port 8000 is occupied by another listener → ran the documented `pact-local` Docker-network fallback with `dynamodb-local:8000` and `host.docker.internal:3000` → all 15 local checks passed.
 - 2026-09-20 19:20 IST — Canonical `make local-smoke` again returned DynamoDB `GetItem` HTTP 404 after health and challenge creation passed → host port 8000 is occupied by a non-DynamoDB listener; a direct container-IP fallback stalled and was stopped → no application change was made, and live smoke plus all unit gates remained green.
+
+ - 2026-09-20 19:32 IST — `make lint` initially rejected the new checkpoint test mock because its lowercase function name triggered the React Hooks rule → renamed it `CheckpointDriver`; focused tests, build, lint, and ReadLints then passed.
 
 ## Open Issues
 - (none yet)
