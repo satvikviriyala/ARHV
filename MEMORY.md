@@ -22,7 +22,7 @@
 - License: MIT; copyright holder confirmed as `Venkata Satya Satvik Viriyala`; task 0.3 commit `3e18dbf5f4ebffcbaad61cdd7f9daefc6823c700`
 - Latest gate: backend 70 passed; frontend 14 passed; Ruff/format/ESLint/TypeScript clean; Cedar 7-row demo, SAM validation, and containerized SAM build passed
 - Human pass rate (study cohort): — · Best agent pass rate: —
-- Last green commit: 4f4bb73 (`docs(redteam): record live worker evidence`)
+- Last green commit: a58455c (`docs: align live demo deployment note`)
 - Amplify artifact check: local `frontend/dist` has root `index.html` and `assets/`; live root returned 200 `text/html` (792 bytes), JS returned 200 `text/javascript` (415205 bytes), CSS returned 200 `text/css` (23976 bytes); `/booking/confirmed` returned the SPA shell and the browser rendered the ARHV document with no dynamic-import error
 - Frontend environment: production/development files generated from `pact-dev` outputs by `make web-env`
 - Cloud smoke: final `make smoke` passed every listed check, including live `imu-v1` pass/booking/replay/explain,
@@ -312,6 +312,8 @@
 - 2026-09-20 18:34 IST — `make report` regenerated `eval/report.md` from two JSONL files and live `/v1/stats`; final
   gates passed: `make test` backend 70/frontend 14, `make lint`, `sam validate --lint`, `make build`, ReadLints,
   and `git diff --check`. Documentation commit `4f4bb73` was pushed to public `origin/main`.
+- 2026-09-20 18:36 IST — README live-demo note was aligned with the observed Amplify deployment job 9; commit
+  `a58455c` was pushed to public `origin/main`. Pre-existing `docs/DEMO_VIDEO.md` edits and `IRCTC.png` remain untouched.
 
 ## Errors & Fixes
 - 2026-09-19 — `doctor.sh` exited 1 with missing prerequisites → the machine lacks the Phase 0 toolchain → human
