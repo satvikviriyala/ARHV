@@ -484,6 +484,8 @@
 
  - 2026-09-20 19:32 IST — `make lint` initially rejected the new checkpoint test mock because its lowercase function name triggered the React Hooks rule → renamed it `CheckpointDriver`; focused tests, build, lint, and ReadLints then passed.
 
+ - 2026-09-20 19:36 IST — Post-deploy `make test` had one unrelated stochastic `backend/tests/test_mdg.py::test_single_frame_carries_no_shape_signal` failure: measured mean `0.2515139560888059` against `< 0.25`; 70 backend tests passed before that failure. No MDG or backend code was changed; live smoke and all focused mobile checks remained green.
+
 ## Open Issues
 - (none yet)
 
