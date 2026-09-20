@@ -7,7 +7,7 @@
 Built for the WeMakeDevs × AWS **First Commit** hackathon (#BharatBuilds). Serverless on AWS: Amplify, API Gateway,
 Lambda, DynamoDB, Secrets Manager, Cognito, Amazon Bedrock, with Cedar policies deciding every protected action.
 
-- **Live app:** https://main.d1i6xn1rxjcnkk.amplifyapp.com (open it on your phone)
+- **Amplify app metadata:** https://main.d1i6xn1rxjcnkk.amplifyapp.com (deployment not verified; CloudFormation deploy is IAM-blocked)
 - **Video (≤ 3 min):** _link added at submission_
 - **The full argument, protocol and proposal:** [`docs/PHYSICAL.md`](docs/PHYSICAL.md)
 
@@ -28,8 +28,8 @@ Lambda, DynamoDB, Secrets Manager, Cognito, Amazon Bedrock, with Cedar policies 
 ## What ARHV does
 | Tier | Proof | Status | Beats | Doesn't beat (yet) |
 |---|---|---|---|---|
-| **T1 physical** | **`imu-v1`: tilt your phone to roll a dot through 3 random rings; the server checks the sensor physics** | **live** | screen-only agents, emulated/replayed/scripted sensor streams | a physics-aware simulator (the attestation gap) |
-| T0 perceptual | `mdg-v1`: a shape visible only in motion; any single frame is noise | live | screenshot-driven agents | purpose-built optical-flow solvers |
+| **T1 physical** | **`imu-v1`: tilt your phone to roll a dot through 3 random rings; the server checks the sensor physics** | **built and locally verified; cloud deploy pending** | screen-only agents, emulated/replayed/scripted sensor streams | a physics-aware simulator (the attestation gap) |
+| T0 perceptual | `mdg-v1`: a shape visible only in motion; any single frame is noise | built and locally verified; cloud deploy pending | screenshot-driven agents | purpose-built optical-flow solvers |
 | T2 vendor-attested | OS-signed physical gesture → private token | proposal ([§7](docs/PHYSICAL.md#7-proposal-vendor-attested-physical-gestures-the-tpm-moment-for-human-verification)) | remote automation and simulators | human farms (quotas handle those) |
 Passing either live proof gives a **120-second, single-use token**. A Lambda authorizer asks **Cedar** whether that
 token may perform the protected action: booking the last seat at a *fictional* "Rush Hour Counter" (a Tatkal-style rush).
@@ -59,16 +59,16 @@ physics-consistent simulator (no phone)      PASSED    -
 ```
 **The last row is the point.** Server-side physics stops every cheap spoof, but a determined attacker can
 synthesise a physically consistent stream, because nothing signs the sensor data. That is the gap vendor
-attestation closes. (`make imu-demo IMU_API=<api-url>` runs the same attacks against the deployed API.)
-Robustness of the verifier on genuine-style motion: 1,080 synthetic traces (iOS and Android conventions × 30/60/100 Hz
-× three holding angles) all pass in the test sweep; real-device results are recorded in `MEMORY.md › Metrics`.
+attestation closes. (`make imu-demo IMU_API=<api-url>` runs the same attacks against a deployed or local API.)
 
 ## The perceptual tier and the red team
 `mdg-v1` hides a shape in ~600 moving dots: dots inside drift one way, dots outside the other. People see it
 instantly; any single frame, which is all a screenshot-driven agent gets, is statistically uniform noise (tested).
 A **Strands Agents** red team on **Amazon Bedrock** (Nova) attacks it through the same public API with a fair,
 fully-informed prompt. Results with 95% confidence intervals: [`eval/report.md`](eval/report.md) (generated from
-the raw runs in `eval/results/`).
+the raw runs in `eval/results/`). The recorded local-API run used Nova 2 Lite with K=4 over 20 valid challenges:
+0/20 full puzzles passed and 12/60 rounds were correct (95% CI [0.1183, 0.3178]); no infrastructure-error attempts
+were counted.
 
 ## Authorization as policy (Cedar)
 ```
@@ -89,8 +89,8 @@ proofs exist, a site raises the bar per resource by adding one `forbid` policy, 
 `navigator.physical.request({gesture, challenge})`: the **operating system**, not the page, renders the gesture
 in a trusted overlay; the secure sensor hub evaluates real readings; the TPM / Secure Enclave / StrongBox signs
 `{origin, nonce, gestureSpecHash, result, time}`; the browser redeems it for a **private, unlinkable token**
-(Privacy Pass / Private Access Control Tokens style). Tilt a phone, open a laptop hinge to a random angle, touch a fingerprint sensor for
-presence: physical, attested, private. Design rules learned from Web Environment Integrity's withdrawal: open
+(Privacy Pass / Private Access Control Tokens style). Tilt a phone for the proposal; laptop-hinge and fingerprint-presence
+proofs are roadmap-only because there is no public lid-angle API and M1/M2 Macs lack the sensor. Design rules learned from Web Environment Integrity's withdrawal: open
 standard, no device fingerprinting, always an accessible alternative. Details: [`docs/PHYSICAL.md §7`](docs/PHYSICAL.md).
 
 ## Architecture
@@ -111,8 +111,8 @@ flowchart LR
 More diagrams (proof tiers, sequences, the vendor-attested flow): [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
 ## Run it
-- **Cloud (AWS, us-east-1):** `make setup build deploy web-bootstrap web-env web-deploy`, then `make smoke`.
-- **Offline:** `make test` (backend + frontend unit tests) · `make cedar-demo` · `make imu-demo`.
+- **Cloud (AWS, us-east-1):** `make setup build deploy web-bootstrap web-env web-deploy`, then `make smoke` (requires the documented IAM permissions).
+- **Offline/local:** `make test` (backend + frontend unit tests) · `make cedar-demo` · `make imu-demo` · `make local-up` + `make local-api`.
 - Contributors and coding agents start at [`CLAUDE.md`](CLAUDE.md) → [`PLAN.md`](PLAN.md).
 
 ## Honest limitations

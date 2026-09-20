@@ -53,6 +53,7 @@ def test_jti_quota_agent_cap_and_stats(ddb_table):
         now=NOW,
     )
     item = store.get_stats("imu-v1")[0]
+    assert item["cohort"] == "study"
     assert item["attempts"] == 1 and item["passes"] == 1 and item["roundsCorrect"] == 3
 
 

@@ -120,7 +120,7 @@ def record_attempt(
         Key={"PK": f"STATS#{family}", "SK": f"COHORT#{cohort}"},
         UpdateExpression=(
             "ADD #attempts :one, #passes :passes, #correct :correct, "
-            "#total :total, #duration :duration SET #updated = :now"
+            "#total :total, #duration :duration SET #updated = :now, #cohort = :cohort"
         ),
         ExpressionAttributeNames={
             "#attempts": "attempts",
@@ -129,6 +129,7 @@ def record_attempt(
             "#total": "roundsTotal",
             "#duration": "durationMsTotal",
             "#updated": "updatedAt",
+            "#cohort": "cohort",
         },
         ExpressionAttributeValues={
             ":one": 1,
@@ -137,6 +138,7 @@ def record_attempt(
             ":total": int(rounds_total),
             ":duration": int(duration_ms),
             ":now": now,
+            ":cohort": cohort,
         },
     )
 
