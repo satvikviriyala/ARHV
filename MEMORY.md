@@ -22,7 +22,7 @@
 - License: MIT; copyright holder confirmed as `Venkata Satya Satvik Viriyala`; task 0.3 commit `3e18dbf5f4ebffcbaad61cdd7f9daefc6823c700`
 - Baseline: backend 65 passed; ruff/format/eslint/tsc clean; frontend build plus 2 tests passed; Cedar 6-row demo, SAM validation, and containerized SAM build passed
 - Human pass rate (study cohort): — · Best agent pass rate: —
-- Last green commit: 9f8a6ed (`feat(api): integrate imu-v1 verification backend`)
+- Last green commit: 911085b (`feat(eval): record Bedrock red-team evidence`)
 - Amplify artifact check: local `frontend/dist` has root `index.html` and `assets/`; a locally verified zip built from `dist` has those entries at its root; the live deployment remains unverified
 - Blockers: H0 IAM AdministratorAccess for `liv28`; disable Amplify branch/app access control or password protection for the public demo, upload a root-correct zip, wait for `Succeed`, and recheck JS/CSS content types plus `#root` · H5 user-reported $10 alarm not independently verifiable (`budgets:ViewBudget` denied)
 
@@ -31,7 +31,7 @@
 - [ ] Sprint S1 (16:05–17:20): backend integration/local gate and containerized build passed; deploy/cloud smoke blocked by H0
 - [ ] Sprint S2 (17:20–18:25): frontend physical and motion paths/local gate passed; Amplify deploy and real-phone test blocked by H0
 - [ ] Sprint S3 (18:25–18:50): local evidence, attack table, Cedar demo, and report passed; live evidence and human pilot blocked by H0
-- [ ] Sprint S4 (18:50–19:45): video, writeup, public repo, and submission
+- [ ] Sprint S4 (18:50–19:45): truthful README/writeup/video draft prepared; recording, upload, and external submission remain human-blocked
 - [x] Prior Phase 0 toolchain, baseline, Bedrock preflight, license, and public GitHub remote
 - [ ] Prior Phase 0 Amplify public deployment and budget-alarm verification follow-ups
 
@@ -39,6 +39,8 @@
 - 2026-09-20 15:56 IST — H0: safe read-only checks show the current `liv28` principal is not AdministratorAccess-capable (`iam:ListAttachedUserPolicies`, `iam:ListGroupsForUser`, `amplify:ListApps`, and `budgets:ViewBudget` are denied). Console (root/admin) → IAM → Users → `liv28` → Add permissions → Attach policies directly → **AdministratorAccess** → Add. Then run `aws sts get-caller-identity`. No IAM change was made by the agent.
 - 2026-09-20 — H15: real-phone tilt verification on the public Amplify URL is not executable because `pact-dev` was not deployed; after H0, open the Amplify HTTPS URL on an iPhone Safari/Android Chrome, allow motion access, pass three times, and report the DevPanel metrics/reasons.
 - 2026-09-20 — H16: the three-person study pilot is not executable without the public Amplify URL; after H0/H15, send `https://main.d1i6xn1rxjcnkk.amplifyapp.com/phone?cohort=study` and the laptop `/?cohort=study`, then record exact first-try counts.
+- 2026-09-20 — H11: record the ≤2:55 demo from `docs/DEMO_VIDEO.md` with the phone screen plus a hand shot, AWS console cuts, local/live evidence honestly labelled, and upload it Public or Unlisted to YouTube.
+- 2026-09-20 — H13: by 19:45 IST submit the hackathon form with the public repo, video URL, truthful writeup, and compliance checklist; save the confirmation screenshot.
 - 2026-09-19 — [RESOLVED] H1: the user confirmed the exact deadline as “Sunday, September 20, 2026 at 8:00 PM IST.”
   PLAN’s “Deadline ≥ Sun 18:00” rule therefore applies: merge Phases 4 and 5 into 2 hours and target the video
   at T-4h (16:00 IST).
@@ -203,6 +205,10 @@
   0 invalid rounds, and 0 infrastructure-error attempts; `make imu-demo IMU_API=http://127.0.0.1:3000`,
   `make cedar-demo`, and `API=http://127.0.0.1:3000 make report` all completed. Report and raw JSONL are in
   `eval/`; commit `911085b` (`feat(eval): record Bedrock red-team evidence`).
+- 2026-09-20 17:25 IST — S4 submission materials prepared: README now reports the real 20-challenge local Nova
+  result and does not claim a live deployment; `docs/SUBMISSION.md` includes the Cursor Agent/GPT-5.6 Luna
+  disclosure, exact result, and current compliance state; `docs/DEMO_VIDEO.md` uses the observed result and
+  requires human counts only after H16. Committed as `ee7a8ad` (`docs: prepare truthful submission draft`).
 
 ## Errors & Fixes
 - 2026-09-19 — `doctor.sh` exited 1 with missing prerequisites → the machine lacks the Phase 0 toolchain → human
