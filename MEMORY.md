@@ -22,7 +22,7 @@
 - License: MIT; copyright holder confirmed as `Venkata Satya Satvik Viriyala`; task 0.3 commit `3e18dbf5f4ebffcbaad61cdd7f9daefc6823c700`
 - Latest gate: backend 71 passed; frontend 18 passed; Ruff/format/ESLint/TypeScript clean; Cedar 7-row demo, SAM validation, and containerized SAM build passed
 - Human pass rate (study cohort): — · Best agent pass rate: —
-- Last green commit: 9590a3b (`docs: credit implementation and video tools`)
+- Last green commit: e147f75 (`fix(web): keep mobile verification sensor-only`)
 - Amplify artifact check: local `frontend/dist` has root `index.html` and `assets/`; live root returned 200 `text/html`, JS returned 200 `text/javascript`, and deployed bundle contains the enable/retry and neutral motion-failure copy
 - Frontend environment: production/development files generated from `pact-dev` outputs by `make web-env`
 - Cloud smoke: final `make smoke` passed every listed check, including live `imu-v1` pass/booking/replay/explain,
@@ -39,7 +39,7 @@
 ## Next Steps
 - [x] Sprint S0 (15:45–16:05): preflight, Makefile `imu-demo`, green tests, and physical-first augmentation commit
 - [x] Sprint S1 (16:05–17:20): backend integration/local gate and containerized build passed; `make deploy` completed with `pact-dev` `CREATE_COMPLETE` and live API output
-- [x] Sprint S2 (17:20–18:25): frontend local gate passed and Amplify deployment job 10 succeeded with mobile-safe sensor retry/fallback UX; real-phone check pending
+- [x] Sprint S2 (17:20–18:25): frontend local gate passed and Amplify deployment job 11 succeeded with sensor-only mobile retry UX; real-phone check pending
 - [x] Sprint S3 (18:25–18:50): local/live API evidence, attack table, Cedar demo, Amplify render, and live async Lab passed; human pilot remains
 - [ ] Sprint S4 (18:50–19:45): truthful README/writeup/video draft prepared and pushed; recording, upload, and external submission remain human-blocked
 - [x] Booking-result UX: confirmation route/card, authorization failure state, fresh-challenge retry, focus management, and focused frontend tests
@@ -346,6 +346,9 @@
 - 2026-09-20 19:20 IST — `make web-env && make web-deploy` passed; Amplify deployment job 11 reported `SUCCEED` at
   `https://main.d1i6xn1rxjcnkk.amplifyapp.com`. No backend deployment was needed because server code and safeguards
   were unchanged. No real-phone result is inferred.
+- 2026-09-20 19:21 IST — Live browser check at `/phone` rendered only the physical sensor start/running states;
+  the deployed page showed no suspicious, bot, agent, motion-puzzle, or account fallback copy. This was desktop browser
+  sensor emulation, not real-phone evidence.
 
 ## Errors & Fixes
 - 2026-09-19 — `doctor.sh` exited 1 with missing prerequisites → the machine lacks the Phase 0 toolchain → human
