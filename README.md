@@ -7,7 +7,7 @@
 Built for the WeMakeDevs × AWS **First Commit** hackathon (#BharatBuilds). Serverless on AWS: Amplify, API Gateway,
 Lambda, DynamoDB, Secrets Manager, Cognito, Amazon Bedrock, with Cedar policies deciding every protected action.
 
-- **Live demo:** https://main.d1i6xn1rxjcnkk.amplifyapp.com (Amplify deployment job 8 succeeded)
+- **Live demo:** https://main.d1i6xn1rxjcnkk.amplifyapp.com (Amplify deployment job 9 succeeded)
 - **Live API:** https://28y0g9h8ki.execute-api.us-east-1.amazonaws.com (`pact-dev`, updated 20 Sep 2026)
 - **Video (≤ 3 min):** _link added at submission_
 - **The full argument, protocol and proposal:** [`docs/PHYSICAL.md`](docs/PHYSICAL.md)
