@@ -14,31 +14,34 @@
 - Current phase: Sprint S4
 - Milestones: M1 human-pass-live [ ] · M2 AI-fails-live [ ] · Early submission [ ] · Final submission [ ]
 - Repo URL: https://github.com/satvikviriyala/ARHV (public; main)
-- Web URL (Amplify): https://main.d1i6xn1rxjcnkk.amplifyapp.com (user-verified metadata for `pact-web`, appId `d1i6xn1rxjcnkk`; live browser testing found the root shell but asset paths serving that shell as `text/html`, and a later fresh navigation returned 401 Basic-auth, so this remains an unverified live-success claim)
-- API URL: —
-- Stack: pact-dev (us-east-1) — not deployed; `cloudformation:CreateChangeSet` denied for `liv28`
+- Web URL (Amplify): https://main.d1i6xn1rxjcnkk.amplifyapp.com (`pact-web`, appId `d1i6xn1rxjcnkk`; deployment job 5 reported `SUCCEED`; live root, JS/CSS assets, and browser rendering verified)
+- API URL: https://28y0g9h8ki.execute-api.us-east-1.amazonaws.com
+- Stack: pact-dev (us-east-1) — `CREATE_COMPLETE`; deployed by `make deploy` on 2026-09-20
 - Bedrock models verified (alias=id): nova-2-lite=us.amazon.nova-2-lite-v1:0; nova-pro=us.amazon.nova-pro-v1:0; both Nova calls pass; Claude remains unverified/omitted and optional, with no Anthropic form submitted
 - Scaffold: validated reference copied; Phase 0 toolchain, setup, baseline, and Nova smoke green; MIT LICENSE and bootstrap commit complete
 - License: MIT; copyright holder confirmed as `Venkata Satya Satvik Viriyala`; task 0.3 commit `3e18dbf5f4ebffcbaad61cdd7f9daefc6823c700`
 - Baseline: backend 65 passed; ruff/format/eslint/tsc clean; frontend build plus 2 tests passed; Cedar 6-row demo, SAM validation, and containerized SAM build passed
 - Human pass rate (study cohort): — · Best agent pass rate: —
 - Last green commit: 911085b (`feat(eval): record Bedrock red-team evidence`)
-- Amplify artifact check: local `frontend/dist` has root `index.html` and `assets/`; a locally verified zip built from `dist` has those entries at its root; the live deployment remains unverified
-- Blockers: H0 IAM AdministratorAccess for `liv28`; disable Amplify branch/app access control or password protection for the public demo, upload a root-correct zip, wait for `Succeed`, and recheck JS/CSS content types plus `#root` · H5 user-reported $10 alarm not independently verifiable (`budgets:ViewBudget` denied)
+- Amplify artifact check: local `frontend/dist` has root `index.html` and `assets/`; live root returned 200 `text/html` (793 bytes), JS returned 200 `text/javascript` (374258 bytes), CSS returned 200 `text/css` (16331 bytes); browser/CDP found `#root`, one child, the ARHV document title/content, and no dynamic-import error
+- Frontend environment: production/development files generated from `pact-dev` outputs by `make web-env`
+- Cloud smoke: `make smoke` passed every listed check, including live `imu-v1` pass/booking/replay/explain and orientation spoof rejection
+- Live evidence: `make imu-demo IMU_API=https://28y0g9h8ki.execute-api.us-east-1.amazonaws.com` rejected all five cheap spoofs and passed only the physics-consistent simulator; `make cedar-demo` showed physical ALLOW, replay/quota DENY
+- Blockers: complete real-phone tilt, human motion-puzzle/study, video, and submission checks · H5 user-reported $10 alarm not independently verifiable (`budgets:ViewBudget` denied)
 
 ## Next Steps
 - [x] Sprint S0 (15:45–16:05): preflight, Makefile `imu-demo`, green tests, and physical-first augmentation commit
-- [ ] Sprint S1 (16:05–17:20): backend integration/local gate and containerized build passed; deploy/cloud smoke blocked by H0
-- [ ] Sprint S2 (17:20–18:25): frontend physical and motion paths/local gate passed; Amplify deploy and real-phone test blocked by H0
-- [ ] Sprint S3 (18:25–18:50): local evidence, attack table, Cedar demo, and report passed; live evidence and human pilot blocked by H0
+- [x] Sprint S1 (16:05–17:20): backend integration/local gate and containerized build passed; `make deploy` completed with `pact-dev` `CREATE_COMPLETE` and live API output
+- [ ] Sprint S2 (17:20–18:25): frontend local gate passed and Amplify deployment job 5 succeeded; real-phone check pending
+- [ ] Sprint S3 (18:25–18:50): local/live API evidence, attack table, Cedar demo, and Amplify render passed; human pilot remains
 - [ ] Sprint S4 (18:50–19:45): truthful README/writeup/video draft prepared; recording, upload, and external submission remain human-blocked
 - [x] Prior Phase 0 toolchain, baseline, Bedrock preflight, license, and public GitHub remote
 - [ ] Prior Phase 0 Amplify public deployment and budget-alarm verification follow-ups
 
 ## Human-Blocked
-- 2026-09-20 15:56 IST — H0: safe read-only checks show the current `liv28` principal is not AdministratorAccess-capable (`iam:ListAttachedUserPolicies`, `iam:ListGroupsForUser`, `amplify:ListApps`, and `budgets:ViewBudget` are denied). Console (root/admin) → IAM → Users → `liv28` → Add permissions → Attach policies directly → **AdministratorAccess** → Add. Then run `aws sts get-caller-identity`. No IAM change was made by the agent.
-- 2026-09-20 — H15: real-phone tilt verification on the public Amplify URL is not executable because `pact-dev` was not deployed; after H0, open the Amplify HTTPS URL on an iPhone Safari/Android Chrome, allow motion access, pass three times, and report the DevPanel metrics/reasons.
-- 2026-09-20 — H16: the three-person study pilot is not executable without the public Amplify URL; after H0/H15, send `https://main.d1i6xn1rxjcnkk.amplifyapp.com/phone?cohort=study` and the laptop `/?cohort=study`, then record exact first-try counts.
+- 2026-09-20 15:56 IST — [RESOLVED 17:13 IST] H0: the user granted AdministratorAccess to `liv28`; `make deploy` now completed successfully. No IAM change was made by the agent.
+- 2026-09-20 — H15: open the deployed Amplify HTTPS URL on an iPhone Safari/Android Chrome, allow motion access, pass three times, and report the DevPanel metrics/reasons; no real-phone success is recorded yet.
+- 2026-09-20 — H16: run the three-person study pilot at `https://main.d1i6xn1rxjcnkk.amplifyapp.com/phone?cohort=study` and `/?cohort=study`, then record exact first-try counts; no human-study result is recorded yet.
 - 2026-09-20 — H11: record the ≤2:55 demo from `docs/DEMO_VIDEO.md` with the phone screen plus a hand shot, AWS console cuts, local/live evidence honestly labelled, and upload it Public or Unlisted to YouTube.
 - 2026-09-20 — H13: by 19:45 IST submit the hackathon form with the public repo, video URL, truthful writeup, and compliance checklist; save the confirmation screenshot.
 - 2026-09-19 — [RESOLVED] H1: the user confirmed the exact deadline as “Sunday, September 20, 2026 at 8:00 PM IST.”
@@ -216,6 +219,38 @@
 - 2026-09-20 17:03 IST — Pushed the verified physical-first ARHV sprint commits through `193ae70` to public
   `origin/main`; the local implementation is now published. Cloud deployment remains blocked by H0
   (`cloudformation:CreateChangeSet` denied).
+- 2026-09-20 17:13 IST — `make deploy` passed after the user granted AdministratorAccess to `liv28`: SAM
+  validation and cached arm64 container build passed; CloudFormation created `pact-dev` in `us-east-1` with
+  `ApiUrl=https://28y0g9h8ki.execute-api.us-east-1.amazonaws.com`, `TableName=pact-dev`,
+  `UserPoolId=us-east-1_LDW5pKgWH`, `UserPoolClientId=3vi5h9e3ch5rnhasascpp0nfbj`, and
+  `ArtifactsBucketName=pact-dev-artifactsbucket-mrg5ofgqklqg`. The Make target also wrote the frontend
+  environment files. No destructive operation was run.
+- 2026-09-20 17:13 IST — `make web-env` passed and regenerated
+  `frontend/.env.production.local` plus `frontend/.env.development.local` from the deployed stack outputs.
+  It recorded only public API/region/Cognito configuration; no secret was printed or committed.
+- 2026-09-20 17:14 IST — `make web-deploy` passed: Vite TypeScript build produced root `dist/index.html`
+  plus `assets/`, Amplify app `pact-web` created deployment job 4, job 4 reported `SUCCEED`, and the script
+  reported `https://main.d1i6xn1rxjcnkk.amplifyapp.com`. Live unauthenticated asset content types and browser
+  rendering are intentionally not claimed until the next verification step.
+- 2026-09-20 17:15 IST — `make smoke` passed against
+  `https://28y0g9h8ki.execute-api.us-east-1.amazonaws.com`: health, mdg create/wrong/pass, missing and garbage
+  token denials, mdg booking/replay/explain, mdg stats, imu pass/booking/replay/explain, orientation spoof
+  rejection, and the agent route all printed `OK`; exit code 0. No real-phone result is inferred from this smoke.
+- 2026-09-20 17:15 IST — Live `make imu-demo IMU_API=https://28y0g9h8ki.execute-api.us-east-1.amazonaws.com`
+  printed `REJECTED` for orientation-only, dead-gyro, desk-flat gravity, teleporting, and replayed-recording
+  attacks, and `PASSED` for the physics-consistent simulator. `make cedar-demo` printed physical
+  `permit-physical-book` ALLOW, replay `forbid-token-replay` DENY, and account quota 2 DENY.
+- 2026-09-20 17:18 IST — Safe live checks initially returned 401 for the Amplify root and both current assets.
+  The documented `aws amplify update-app ... --no-enable-basic-auth` and `update-branch ... --no-enable-basic-auth`
+  commands completed successfully and reported app/branch basic auth disabled; no IAM or app deletion was used.
+- 2026-09-20 17:19 IST — After basic-auth removal, the root returned 200 but both assets returned 200
+  `text/html` (793 bytes), identifying the existing catch-all SPA rule as a separate issue. `make web-bootstrap`
+  applied the documented asset-safe rewrite, then `make web-deploy` created job 5 (`SUCCEED`). Final checks
+  returned root 200 `text/html`, JS 200 `text/javascript`, CSS 200 `text/css`; the browser rendered
+  `ARHV · Agent-Resistant Human Verification` with the physical-first home content.
+- 2026-09-20 17:19 IST — Browser CDP verified `#root` exists with one child, title
+  `ARHV · Agent-Resistant Human Verification`, physical-first ARHV text in the root, and no
+  `Failed to fetch dynamically imported module` text.
 
 ## Errors & Fixes
 - 2026-09-19 — `doctor.sh` exited 1 with missing prerequisites → the machine lacks the Phase 0 toolchain → human
@@ -277,6 +312,9 @@
   `AccessDenied ... cloudformation:CreateChangeSet` for `liv28` → the IAM principal lacks CloudFormation deploy
   permission → stopped after the definitive authorization diagnosis; no IAM edit, stack deletion, or destructive
   fallback was attempted. The exact H0 AdministratorAccess step remains the required human action.
+- 2026-09-20 17:13 IST — The former CloudFormation authorization failure was resolved by the user's
+  AdministratorAccess grant to `liv28`; a fresh `make deploy` verified the minimal recovery with a successful
+  `CREATE_COMPLETE` stack and the outputs recorded in Snapshot/Log.
 - 2026-09-20 16:29 IST — Initial S2 frontend gate failed on React hook state-in-effect lint rules and an unused
   API payload assignment → derived token claims with `useMemo`, deferred initial loads through a timer, moved
   failure copy to `lib/reasons.ts`, and removed the assignment. Verification: frontend lint passed.
@@ -299,6 +337,16 @@
   the cohort attribute → added the attribute to the DynamoDB `SET` expression and regression coverage, reset only
   the in-memory local table, reran the two N=10 Bedrock cohorts, and regenerated the report. Verification:
   `make test-backend` passed 65, `make lint` passed, and `eval/report.md` now records the agent cohort.
+- 2026-09-20 17:16 IST — The first scripted live HTTP check exited with `zsh: eval:1: unmatched "` because
+  nested shell/Python quoting was malformed → replaced it with a simple `curl` loop → the corrected check
+  reproduced the live 401 response, and subsequent documented fixes plus final checks passed.
+- 2026-09-20 17:18 IST — Live Amplify root/assets returned 401 → app and branch basic-auth protection was enabled
+  → ran the documented non-destructive `--no-enable-basic-auth` updates → corrected check returned root/assets
+  200, but assets were still HTML. Verification then isolated the SPA-rule issue and the later rewrite/deploy
+  fix produced correct JavaScript/CSS content types and browser rendering.
+- 2026-09-20 17:19 IST — Amplify asset requests returned 200 `text/html` → existing `/ <*>` catch-all rewrite
+  intercepted static files → ran documented `make web-bootstrap` followed by `make web-deploy` → job 5
+  succeeded, JS/CSS content types and byte sizes were correct, and browser snapshot showed the ARHV app.
 
 ## Open Issues
 - (none yet)
