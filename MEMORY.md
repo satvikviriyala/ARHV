@@ -11,7 +11,7 @@
 
 ## Snapshot
 - Deadline: Sun 20 Sep 2026 20:00 IST; submit by 19:45 IST
-- Current phase: Sprint S2
+- Current phase: Sprint S3
 - Milestones: M1 human-pass-live [ ] · M2 AI-fails-live [ ] · Early submission [ ] · Final submission [ ]
 - Repo URL: https://github.com/satvikviriyala/ARHV (public; main)
 - Web URL (Amplify): https://main.d1i6xn1rxjcnkk.amplifyapp.com (user-verified metadata for `pact-web`, appId `d1i6xn1rxjcnkk`; live browser testing found the root shell but asset paths serving that shell as `text/html`, and a later fresh navigation returned 401 Basic-auth, so this remains an unverified live-success claim)
@@ -29,7 +29,7 @@
 ## Next Steps
 - [x] Sprint S0 (15:45–16:05): preflight, Makefile `imu-demo`, green tests, and physical-first augmentation commit
 - [ ] Sprint S1 (16:05–17:20): backend integration/local gate and containerized build passed; deploy/cloud smoke blocked by H0
-- [ ] Sprint S2 (17:20–18:25): frontend physical and motion paths, Amplify deploy, and real-phone test
+- [ ] Sprint S2 (17:20–18:25): frontend physical and motion paths/local gate passed; Amplify deploy and real-phone test blocked by H0
 - [ ] Sprint S3 (18:25–18:50): live evidence, attack table, Cedar demo, report, and pilot
 - [ ] Sprint S4 (18:50–19:45): video, writeup, public repo, and submission
 - [x] Prior Phase 0 toolchain, baseline, Bedrock preflight, license, and public GitHub remote
@@ -93,6 +93,7 @@
 - 2026-09-20 — imu-v1 physical proof family added, thesis screen-only tests are a losing race and vendor attestation is the endgame
 - 2026-09-20 — public name is ARHV because PACT is also Private Access Control Tokens (Cloudflare/Chrome/Firefox/Edge/Shopify, June 2026)
 - 2026-09-20 — MacBook hinge and fingerprint presence are roadmap-only because there is no public lid-angle API and M1/M2 Macs lack the sensor.
+- 2026-09-20 — Added frontend dependency `qrcode` and `@types/qrcode` for the laptop-to-phone QR fallback required by the physical chooser; npm retained the documented React 19 peer warnings and installed with 0 vulnerabilities.
 
 ## Log
 - 2026-09-19 — Handover pack created: docs + validated reference scaffold (backend: 20 pytest tests pass, ruff clean, cfn-lint clean; Cedar policies validated with cedarpy 4.12.0; Strands 1.56.0 plumbing tested with a fake model; frontend skeleton builds/lints/tests on Vite 8 + React 19 + Tailwind 4). No project code written or deployed yet.
@@ -186,6 +187,15 @@
   from cache but failed before creating the stack: `AccessDenied` for `cloudformation:CreateChangeSet` on
   `aws-sam-cli-managed-default`. No AWS mutation or retry was attempted; S1 cloud acceptance is blocked by H0,
   and the local/S2 fallback is active.
+- 2026-09-20 16:40 IST — S2 local gate passed: `npm run lint`, `npx vitest run` (5 files, 10 tests), and
+  `npm run build` passed; final `make test` passed backend 65 and frontend 10, and `make lint` passed. The
+  physical-first Home, `/phone`, chooser/QR, motion puzzle, booking card, DevPanel, and placeholder Lab/About/
+  Account routes were committed in `4a93944` (`feat(web): ship physical-first verification UI`).
+- 2026-09-20 16:40 IST — The stack-dependent `make web-env` could not run because `pact-dev` does not exist after
+  the blocked deploy. The local data plane eventually ran in Docker; the canonical host bootstrap collided with
+  Cursor's listener on `127.0.0.1:8000`, so the table was bootstrapped through the `pact-local` Docker network.
+  The smoke script's `PACT_SMOKE_DDB_ENDPOINT` override then enabled a full local run: all health, mdg, Cedar
+  booking/replay, stats, imu pass/booking/replay, and orientation-spoof checks were `OK`.
 
 ## Errors & Fixes
 - 2026-09-19 — `doctor.sh` exited 1 with missing prerequisites → the machine lacks the Phase 0 toolchain → human
@@ -247,6 +257,21 @@
   `AccessDenied ... cloudformation:CreateChangeSet` for `liv28` → the IAM principal lacks CloudFormation deploy
   permission → stopped after the definitive authorization diagnosis; no IAM edit, stack deletion, or destructive
   fallback was attempted. The exact H0 AdministratorAccess step remains the required human action.
+- 2026-09-20 16:29 IST — Initial S2 frontend gate failed on React hook state-in-effect lint rules and an unused
+  API payload assignment → derived token claims with `useMemo`, deferred initial loads through a timer, moved
+  failure copy to `lib/reasons.ts`, and removed the assignment. Verification: frontend lint passed.
+- 2026-09-20 16:29 IST — Frontend build then reported incompatible motion/physical verification callback detail
+  types → widened Home and Phone callbacks to accept either assurance and optional metrics. Verification:
+  `npm run build` and the final frontend gate passed.
+- 2026-09-20 16:37 IST — First local smoke returned `mdg stats: FAIL`; the local API log showed `AttributeError`
+  for missing `stats.CHANCE_ROUND` → added the documented constants plus a regression assertion. Verification:
+  rebuilt SAM and the Docker-network local smoke passed every check.
+- 2026-09-20 16:01 IST — `make web-env` returned `ValidationError: Stack with id pact-dev does not exist` after
+  the CloudFormation deploy denial → no frontend environment was generated and no live URL is claimed.
+- 2026-09-20 16:02 IST — `make local-up` exhausted its 30-second bootstrap window and the retry still hit a
+  404 because Cursor owns host `127.0.0.1:8000` while Docker publishes DynamoDB there → confirmed the container
+  healthy and bootstrapped `pact-local` through a one-shot container on the `pact-local` network; local smoke
+  then passed. No AWS resource was touched.
 
 ## Open Issues
 - (none yet)
