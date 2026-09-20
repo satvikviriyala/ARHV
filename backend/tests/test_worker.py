@@ -44,7 +44,11 @@ def test_worker_runs_fake_model_uploads_frames_and_records_stats(ddb_table, monk
         return original_update(target, **fields)
 
     monkeypatch.setattr(worker.store, "update_run", capture_update)
-    monkeypatch.setattr(models, "build_model", lambda *args, **kwargs: FakeModel(['{"answer":"circle"}'] * 6))
+    monkeypatch.setattr(
+        models,
+        "build_model",
+        lambda *args, **kwargs: FakeModel(['{"answer":"circle","confidence":0.3}'] * 6),
+    )
 
     result = worker.handler({"runId": run_id}, None)
 

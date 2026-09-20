@@ -9,6 +9,7 @@ from __future__ import annotations
 import os
 import secrets
 import time
+from decimal import Decimal
 from functools import lru_cache
 from typing import Any
 
@@ -38,6 +39,10 @@ def _set_error(run_id: str, message: str, *, rounds: list[dict[str, Any]] | None
         store.update_run(run_id, **fields)
     except Exception:
         log.get_logger().exception("agent_run_error_update_failed", extra={"runId": run_id})
+        try:
+            store.update_run(run_id, status="error", error=message, finishedAt=_now())
+        except Exception:
+            log.get_logger().exception("agent_run_error_fallback_failed", extra={"runId": run_id})
     log.log_event("agent_run_error", runId=run_id, error=message)
     return {"status": "error", "error": message}
 
@@ -94,12 +99,13 @@ def handler(event: dict[str, Any], _context: object) -> dict[str, Any]:
             attempt = solver.solve_round(
                 model, [png.render_frame_png(frame, scale=3) for frame in frames], round_data["options"]
             )
+            confidence = Decimal(str(attempt.confidence)) if attempt.confidence is not None else None
             round_result: dict[str, Any] = {
                 "index": round_index,
                 "options": list(round_data["options"]),
                 "frameKeys": frame_keys,
                 "answer": attempt.answer,
-                "confidence": attempt.confidence,
+                "confidence": confidence,
                 "rationale": attempt.rationale,
                 "valid": attempt.valid,
                 "latencyMs": attempt.latency_ms,
