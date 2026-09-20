@@ -22,7 +22,7 @@
 - License: MIT; copyright holder confirmed as `Venkata Satya Satvik Viriyala`; task 0.3 commit `3e18dbf5f4ebffcbaad61cdd7f9daefc6823c700`
 - Baseline: backend 65 passed; ruff/format/eslint/tsc clean; frontend build plus 2 tests passed; Cedar 6-row demo, SAM validation, and containerized SAM build passed
 - Human pass rate (study cohort): — · Best agent pass rate: —
-- Last green commit: 911085b (`feat(eval): record Bedrock red-team evidence`)
+- Last green commit: 86a0c96 (`chore(deploy): record live ARHV verification`)
 - Amplify artifact check: local `frontend/dist` has root `index.html` and `assets/`; live root returned 200 `text/html` (793 bytes), JS returned 200 `text/javascript` (374258 bytes), CSS returned 200 `text/css` (16331 bytes); browser/CDP found `#root`, one child, the ARHV document title/content, and no dynamic-import error
 - Frontend environment: production/development files generated from `pact-dev` outputs by `make web-env`
 - Cloud smoke: `make smoke` passed every listed check, including live `imu-v1` pass/booking/replay/explain and orientation spoof rejection
@@ -36,7 +36,7 @@
 - [ ] Sprint S3 (18:25–18:50): local/live API evidence, attack table, Cedar demo, and Amplify render passed; human pilot remains
 - [ ] Sprint S4 (18:50–19:45): truthful README/writeup/video draft prepared; recording, upload, and external submission remain human-blocked
 - [x] Prior Phase 0 toolchain, baseline, Bedrock preflight, license, and public GitHub remote
-- [ ] Prior Phase 0 Amplify public deployment and budget-alarm verification follow-ups
+- [x] Prior Phase 0 Amplify public deployment; budget-alarm verification remains pending
 
 ## Human-Blocked
 - 2026-09-20 15:56 IST — [RESOLVED 17:13 IST] H0: the user granted AdministratorAccess to `liv28`; `make deploy` now completed successfully. No IAM change was made by the agent.
@@ -251,6 +251,9 @@
 - 2026-09-20 17:19 IST — Browser CDP verified `#root` exists with one child, title
   `ARHV · Agent-Resistant Human Verification`, physical-first ARHV text in the root, and no
   `Failed to fetch dynamically imported module` text.
+- 2026-09-20 17:20 IST — Committed the verified deployment record as `86a0c96`
+  (`chore(deploy): record live ARHV verification`) and pushed it successfully to public `origin/main`
+  (`6e662e7..86a0c96`). No generated environment file or credential was tracked.
 
 ## Errors & Fixes
 - 2026-09-19 — `doctor.sh` exited 1 with missing prerequisites → the machine lacks the Phase 0 toolchain → human
