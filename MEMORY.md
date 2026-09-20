@@ -213,6 +213,9 @@
   `make lint` passed Ruff/format/ESLint/TypeScript; `cd backend && sam validate --lint` accepted the template.
   Worktree is clean on `main`, ahead of `origin/main` by 12 commits; live deployment, video upload, and form
   submission remain unverified human actions.
+- 2026-09-20 17:03 IST — Pushed the verified physical-first ARHV sprint commits through `193ae70` to public
+  `origin/main`; the local implementation is now published. Cloud deployment remains blocked by H0
+  (`cloudformation:CreateChangeSet` denied).
 
 ## Errors & Fixes
 - 2026-09-19 — `doctor.sh` exited 1 with missing prerequisites → the machine lacks the Phase 0 toolchain → human
