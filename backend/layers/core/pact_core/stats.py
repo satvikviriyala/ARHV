@@ -4,6 +4,9 @@ from __future__ import annotations
 
 import math
 
+CHANCE_ROUND = 1 / 6
+CHANCE_PASS = CHANCE_ROUND**3
+
 
 def wilson(k: int, n: int, z: float = 1.96) -> tuple[float, float, float]:
     if n <= 0:

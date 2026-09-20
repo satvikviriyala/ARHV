@@ -38,8 +38,8 @@ def request(
 
 
 def table_for(args: argparse.Namespace):
-    endpoint = None
-    if args.local:
+    endpoint = os.environ.get("PACT_SMOKE_DDB_ENDPOINT")
+    if args.local and not endpoint:
         endpoint = "http://127.0.0.1:4566" if args.profile == "localstack" else "http://127.0.0.1:8000"
     cfn = boto3.client("cloudformation", region_name=args.region)
     if args.local:

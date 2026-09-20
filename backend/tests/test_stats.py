@@ -3,6 +3,8 @@ from pact_core import stats
 
 
 def test_wilson_reference_values():
+    assert stats.CHANCE_ROUND == 1 / 6
+    assert stats.CHANCE_PASS == (1 / 6) ** 3
     assert stats.wilson(0, 20) == pytest.approx((0.0, 0.0, 0.1611), abs=0.0001)
     assert stats.wilson(19, 20) == pytest.approx((0.95, 0.7639, 0.9911), abs=0.0001)
     assert stats.wilson(15, 90) == pytest.approx((0.1667, 0.1037, 0.2569), abs=0.0001)
