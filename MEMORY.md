@@ -22,18 +22,19 @@
 - License: MIT; copyright holder confirmed as `Venkata Satya Satvik Viriyala`; task 0.3 commit `3e18dbf5f4ebffcbaad61cdd7f9daefc6823c700`
 - Baseline: backend 65 passed; ruff/format/eslint/tsc clean; frontend build plus 2 tests passed; Cedar 6-row demo, SAM validation, and containerized SAM build passed
 - Human pass rate (study cohort): — · Best agent pass rate: —
-- Last green commit: 86a0c96 (`chore(deploy): record live ARHV verification`)
+- Last green commit: 7137fbc (`feat(web): add fictional rail booking flow`)
 - Amplify artifact check: local `frontend/dist` has root `index.html` and `assets/`; live root returned 200 `text/html` (793 bytes), JS returned 200 `text/javascript` (374258 bytes), CSS returned 200 `text/css` (16331 bytes); browser/CDP found `#root`, one child, the ARHV document title/content, and no dynamic-import error
 - Frontend environment: production/development files generated from `pact-dev` outputs by `make web-env`
 - Cloud smoke: `make smoke` passed every listed check, including live `imu-v1` pass/booking/replay/explain and orientation spoof rejection
 - Live evidence: `make imu-demo IMU_API=https://28y0g9h8ki.execute-api.us-east-1.amazonaws.com` rejected all five cheap spoofs and passed only the physics-consistent simulator; `make cedar-demo` showed physical ALLOW, replay/quota DENY
 - IMU tuning: `tiltErrDeg` budget is now 18° (was 12°) for modest browser sensor-fusion/calibration skew; no gravity, gyro, continuity, target, binding, or token rules changed; focused IMU tests 22 passed
+- Frontend refresh: `ARHV Rail` fictional route/date/class/quota flow defaults Bengaluru → Visakhapatnam, lists three fictional services, and contextualises verification as a quick presence check; local lint, TypeScript, 10 Vitest tests, and production build passed
 - Blockers: complete real-phone tilt, human motion-puzzle/study, video, and submission checks · H5 user-reported $10 alarm not independently verifiable (`budgets:ViewBudget` denied)
 
 ## Next Steps
 - [x] Sprint S0 (15:45–16:05): preflight, Makefile `imu-demo`, green tests, and physical-first augmentation commit
 - [x] Sprint S1 (16:05–17:20): backend integration/local gate and containerized build passed; `make deploy` completed with `pact-dev` `CREATE_COMPLETE` and live API output
-- [ ] Sprint S2 (17:20–18:25): frontend local gate passed and Amplify deployment job 5 succeeded; real-phone check pending; rail-counter refresh remains to deploy
+- [ ] Sprint S2 (17:20–18:25): frontend local gate passed and Amplify deployment job 5 succeeded; rail-counter refresh committed; real-phone check pending; redeploy remains
 - [ ] Sprint S3 (18:25–18:50): local/live API evidence, attack table, Cedar demo, and Amplify render passed; human pilot remains
 - [ ] Sprint S4 (18:50–19:45): truthful README/writeup/video draft prepared; recording, upload, and external submission remain human-blocked
 - [x] Prior Phase 0 toolchain, baseline, Bedrock preflight, license, and public GitHub remote
@@ -103,6 +104,7 @@
 - 2026-09-20 — MacBook hinge and fingerprint presence are roadmap-only because there is no public lid-angle API and M1/M2 Macs lack the sensor.
 - 2026-09-20 — Added frontend dependency `qrcode` and `@types/qrcode` for the laptop-to-phone QR fallback required by the physical chooser; npm retained the documented React 19 peer warnings and installed with 0 vulnerabilities.
 - 2026-09-20 — Set the `imu-v1` tilt-vs-gravity median-error budget from 12° to 18° per `docs/PHYSICAL.md §3`: the client merges independently timed orientation and motion events, so a modest fusion/calibration offset can reject a coherent human-like trace; gravity, gyro, continuity, targets, binding, and replay semantics remain unchanged. Rejected loosening target/rate checks.
+- 2026-09-20 — Reframed the demo counter as a fictional `ARHV Rail` journey search with existing design tokens and no new dependency; route controls stay local to the demo while the protected API booking contract remains unchanged.
 
 ## Log
 - 2026-09-19 — Handover pack created: docs + validated reference scaffold (backend: 20 pytest tests pass, ruff clean, cfn-lint clean; Cedar policies validated with cedarpy 4.12.0; Strands 1.56.0 plumbing tested with a fake model; frontend skeleton builds/lints/tests on Vite 8 + React 19 + Tailwind 4). No project code written or deployed yet.
@@ -261,6 +263,10 @@
   orientation-only, dead-gyro, and mismatched-gravity spoofs remained rejected. Ruff and ReadLints reported no
   errors. The initial diagnostic omitted `PYTHONPATH` and failed to import `pact_core`; rerunning with
   `PYTHONPATH=backend/layers/core` passed.
+- 2026-09-20 17:45 IST — `frontend` gates passed after the rail refresh: `npm run lint`, `npx tsc -b`,
+  `npx vitest run` (5 files, 10 tests), and `npm run build`; ReadLints reported no errors. Browser review on
+  `http://localhost:5173` verified default route controls, three service cards, contextual `QUICK PRESENCE CHECK`,
+  phone QR generation, and `/phone` copy including `Tilt your phone gently`. No real phone or live booking is inferred.
 
 ## Errors & Fixes
 - 2026-09-19 — `doctor.sh` exited 1 with missing prerequisites → the machine lacks the Phase 0 toolchain → human
@@ -360,6 +366,9 @@
 - 2026-09-20 — Direct IMU margin diagnostic returned `ModuleNotFoundError: No module named 'pact_core'` because
   the standalone command did not include the layer path → reran with `PYTHONPATH=backend/layers/core`; the
   relaxed-trace and spoof outcomes then matched the regression test.
+- 2026-09-20 — Local browser `/phone` initially showed `Network error.` at `http://127.0.0.1:5173` because the
+  deployed CORS allow-list contains `http://localhost:5173`, not the loopback alias → reopened at
+  `http://localhost:5173/phone`; the challenge loaded and the phone UI snapshot passed. No CORS policy was widened.
 
 ## Open Issues
 - (none yet)
