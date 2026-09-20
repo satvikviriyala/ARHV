@@ -183,10 +183,11 @@ idle ─start→ loading (POST /v1/challenges {family:"imu-v1"}) ─ok→ tilt (
 submitting ─200 passed→ passed(token, metrics) → onVerified(token)
 submitting ─200 failed→ failed(reasons, metrics) ─"Try again"→ loading (new challenge; old one is consumed)
 any 409/410 → error("This check expired. Start a new one.") ; network → error(retry)
-permission denied → keep the challenge and show "Enable motion sensors and retry" from a fresh user gesture, plus
-"Use the moving-shape alternative"; unavailable/no complete samples → fallback card: "Motion sensors aren't available
-here" + "Spot the shape instead" + the account path. The recorder allows 3 seconds for the first complete
-motion+orientation sample before declaring sensors unavailable.
+permission denied → keep the challenge and show "Enable motion sensors and retry" from a fresh user gesture;
+unavailable/no complete samples → neutral sensor retry guidance. The recorder allows 3 seconds for the first complete
+motion+orientation sample before declaring sensors unavailable. The `/phone` route is sensor-only: it never switches
+to the motion puzzle or presents bot/suspicion classification. The separate `/account` route remains the documented
+non-cognitive alternative; desktop chooser/widgets may still link to it.
 ```
 Failure copy (map `reasons`, most specific first):
 | reasons contain | Message |
@@ -198,12 +199,14 @@ Failure copy (map `reasons`, most specific first):
 Show the `metrics` only in the DevPanel (not in the main card).
 
 **`/phone` page** (`pages/Phone.tsx`, mobile-first, ≤ 360×640 without scrolling during the tilt):
-counter summary → PhysicalWidget → `api.book(token)` → BookingCard (+ DevPanel toggle). Handoff mode (`?h=&k=`,
+counter summary → sensor-only PhysicalWidget → `api.book(token)` → BookingCard (+ DevPanel toggle). Sensor
+permission, unavailable-sensor, incomplete-signal, and booking-retry states use neutral motion guidance and never
+classify the user or sensor submission as suspicious. Handoff mode (`?h=&k=`,
 S5): the widget sends `{family: "imu-v1", handoffId, phoneKey}` and, on pass, shows **"Done. Return to your
 computer."** with no booking on the phone.
 **Platform notes:** sensors need HTTPS (Amplify URL; never plain `http://` LAN URLs). iOS: if the user taps
-"Don't Allow", Safari may not ask again for this site until it's restarted, so keep the explicit retry and show
-the motion-puzzle/account fallback. Android Chrome streams without a prompt. In-app browsers (WhatsApp/Instagram)
+"Don't Allow", Safari may not ask again for this site until it's restarted, so keep the explicit sensor retry.
+Android Chrome streams without a prompt. In-app browsers (WhatsApp/Instagram)
 may block sensors: show "Open in Chrome/Safari". Keep the page in portrait (the dot uses device axes). The client
 uses the server's documented `radius + 2°` and `80%` hold slack for noisy delivery; the server remains authoritative.
 **Tests (Vitest):** keep `lib/imu.test.ts`; add `reasons.test.ts` (reasons → message mapping, most specific first)

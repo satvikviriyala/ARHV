@@ -57,6 +57,18 @@ describe("booking result flow", () => {
     expect(onRetry).toHaveBeenCalledOnce();
   });
 
+  it("keeps mobile booking failures on neutral sensor retry copy", () => {
+    const onRetry = vi.fn();
+    render(<VerificationFailure onRetry={onRetry} sensorOnly />);
+
+    expect(screen.getByRole("heading", { name: "Motion verification needs another try" })).toBeTruthy();
+    expect(screen.getByText("The motion signal was incomplete. Please try the sensors again.")).toBeTruthy();
+    expect(screen.queryByText(/suspicious activity/i)).toBeNull();
+    expect(screen.queryByText(/bot|agent/i)).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Try sensors again" }));
+    expect(onRetry).toHaveBeenCalledOnce();
+  });
+
   it("passes a successful booking response to the confirmation transition", async () => {
     vi.spyOn(api, "book").mockResolvedValue(booking);
     const onBooked = vi.fn();

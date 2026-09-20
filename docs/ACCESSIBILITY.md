@@ -19,8 +19,8 @@ If `matchMedia("(prefers-reduced-motion: reduce)")` matches: don't autoplay the 
 ## 3. The account path (Phase 4)
 Email + code sign-up/sign-in (Cognito) → `POST /v1/tokens/account` → token `asr=account` → Cedar allows up to 2
 bookings per day. Page copy: "Can't use motion puzzles? Verify with a confirmed account instead. No puzzle, just
-your email. This path is limited to 2 bookings per day to keep bots out." Link to it from the widget in every
-state and from the booking card.
+your email. This path is limited to 2 bookings per day." Desktop widgets and booking cards link to this route;
+`/phone` remains a sensor-only flow, while the account route stays available separately.
 
 ## 4. Copy guidelines
 Plain language; no blame ("Not quite", never "Wrong!" or "Are you a robot?"). Say how long it takes ("about 10

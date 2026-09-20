@@ -3,11 +3,13 @@ import { useEffect, useRef } from "react";
 type Props = {
   onRetry: () => void;
   context?: string;
+  sensorOnly?: boolean;
 };
 
 export default function VerificationFailure({
   onRetry,
   context = "The booking was not completed. Your journey details are still here.",
+  sensorOnly = false,
 }: Props) {
   const heading = useRef<HTMLHeadingElement>(null);
 
@@ -28,16 +30,18 @@ export default function VerificationFailure({
         tabIndex={-1}
         className="mt-2 text-2xl font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
       >
-        Verification could not be confirmed
+        {sensorOnly ? "Motion verification needs another try" : "Verification could not be confirmed"}
       </h2>
-      <p className="mt-2 font-medium text-bad">Suspicious activity detected. Please try human verification again.</p>
+      <p className="mt-2 font-medium text-bad">
+        {sensorOnly ? "The motion signal was incomplete. Please try the sensors again." : "Suspicious activity detected. Please try human verification again."}
+      </p>
       <p className="mt-2 text-sm text-muted">{context}</p>
       <button
         type="button"
         onClick={onRetry}
         className="mt-5 rounded-xl bg-accent px-5 py-3 font-semibold text-bg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
       >
-        Try verification again
+        {sensorOnly ? "Try sensors again" : "Try verification again"}
       </button>
     </section>
   );

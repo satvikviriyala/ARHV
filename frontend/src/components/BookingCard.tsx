@@ -10,9 +10,10 @@ type Props = {
   onBooked?: (booking: Booking) => void;
   onAuthorizationError?: (error: ApiError) => void;
   onRetry: () => void;
+  sensorOnly?: boolean;
 };
 
-export default function BookingCard({ token, journey, train, onBooked, onAuthorizationError, onRetry }: Props) {
+export default function BookingCard({ token, journey, train, onBooked, onAuthorizationError, onRetry, sensorOnly = false }: Props) {
   const [booking, setBooking] = useState<Booking | null>(null);
   const [error, setError] = useState("");
   const [authorizationFailed, setAuthorizationFailed] = useState(false);
@@ -44,6 +45,7 @@ export default function BookingCard({ token, journey, train, onBooked, onAuthori
     return (
       <VerificationFailure
         onRetry={onRetry}
+        sensorOnly={sensorOnly}
         context="The booking was not completed. Start a fresh check before trying this journey again."
       />
     );

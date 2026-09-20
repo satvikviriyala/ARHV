@@ -2,18 +2,19 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router";
 import { api, ApiError } from "../lib/api";
 import type { ImuChallenge, ImuTrace } from "../lib/imu";
-import { reasonMessage, verificationDisposition } from "../lib/reasons";
+import { reasonMessage } from "../lib/reasons";
 import TiltChallenge from "./TiltChallenge";
 
 type Props = {
   cohort?: string;
   onVerified: (token: string, details?: { assurance: "physical"; metrics?: Record<string, unknown> }) => void;
   onFallback?: () => void;
+  sensorOnly?: boolean;
 };
 
 type Status = "loading" | "tilt" | "submitting" | "passed" | "failed" | "fallback" | "error";
 
-export default function PhysicalWidget({ cohort = "public", onVerified, onFallback }: Props) {
+export default function PhysicalWidget({ cohort = "public", onVerified, onFallback, sensorOnly = false }: Props) {
   const [status, setStatus] = useState<Status>("loading");
   const [challenge, setChallenge] = useState<ImuChallenge | null>(null);
   const [reasons, setReasons] = useState<string[]>([]);
@@ -107,15 +108,10 @@ export default function PhysicalWidget({ cohort = "public", onVerified, onFallba
     );
   }
   if (status === "failed") {
-    const disposition = verificationDisposition(reasons, metrics);
     return (
       <div className="flex flex-col items-center gap-4 rounded-2xl border border-bad bg-bad/5 p-5 text-center" role="alert">
         <p className="font-mono text-xs tracking-[0.18em] text-bad">VERIFICATION REQUIRED</p>
-        <p className="text-lg font-semibold text-bad">
-          {disposition === "suspicious"
-            ? "Suspicious activity detected. Please try human verification again."
-            : "Motion needs another try. Your activity was not labeled suspicious."}
-        </p>
+        <p className="text-lg font-semibold text-bad">Motion signal incomplete. Please try the sensors again.</p>
         <p className="text-sm text-muted">{reasonMessage(reasons)}</p>
         <button
           ref={retryButton}
@@ -123,14 +119,16 @@ export default function PhysicalWidget({ cohort = "public", onVerified, onFallba
           onClick={() => void load()}
           className="rounded-xl bg-accent px-5 py-3 font-semibold text-bg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
         >
-          Try verification again
+          Try sensors again
         </button>
-        <Link
-          to="/account"
-          className="text-sm text-muted underline decoration-accent underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-        >
-          Can&apos;t use motion? Verify with your account instead.
-        </Link>
+        {!sensorOnly && (
+          <Link
+            to="/account"
+            className="text-sm text-muted underline decoration-accent underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          >
+            Can&apos;t use motion? Verify with your account instead.
+          </Link>
+        )}
         <p className="text-xs text-muted">Metrics are available in “Show what AWS decided”.</p>
       </div>
     );
@@ -147,7 +145,14 @@ export default function PhysicalWidget({ cohort = "public", onVerified, onFallba
         <TiltChallenge
           challenge={challenge}
           onDone={(trace) => void submit(trace)}
-          onUnsupported={() => setStatus("fallback")}
+          onUnsupported={() => {
+            if (onFallback) {
+              setStatus("fallback");
+            } else {
+              setMessage("Motion sensors were not available. Check access and try the sensors again.");
+              setStatus("error");
+            }
+          }}
           autoFocus
         />
       )}

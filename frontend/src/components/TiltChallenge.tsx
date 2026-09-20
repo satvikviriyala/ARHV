@@ -100,7 +100,7 @@ export default function TiltChallenge({ challenge, onDone, onUnsupported, autoFo
             {status === "denied" ? "Enable motion sensors and retry" : "Start physical check"}
           </button>
         )}
-        {status === "denied" && (
+        {status === "denied" && onUnsupported && (
           <button
             type="button"
             onClick={onUnsupported}

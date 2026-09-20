@@ -1,10 +1,9 @@
 import { useCallback, useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router";
+import { useNavigate, useSearchParams } from "react-router";
 import BookingCard from "../components/BookingCard";
 import DevPanel from "../components/DevPanel";
 import JourneySearch from "../components/JourneySearch";
 import PhysicalWidget from "../components/PhysicalWidget";
-import PactWidget from "../components/PactWidget";
 import VerificationFailure from "../components/VerificationFailure";
 import type { Booking } from "../lib/api";
 import { getCohort } from "../lib/cohort";
@@ -18,7 +17,6 @@ export default function Phone() {
   const [editing, setEditing] = useState(false);
   const [token, setToken] = useState("");
   const [metrics, setMetrics] = useState<Record<string, unknown>>({});
-  const [fallback, setFallback] = useState(false);
   const [booked, setBooked] = useState(false);
   const [bookingError, setBookingError] = useState(false);
   const [verificationKey, setVerificationKey] = useState(0);
@@ -79,28 +77,17 @@ export default function Phone() {
       {bookingError && (
         <VerificationFailure
           onRetry={retryVerification}
+          sensorOnly
           context="The booking was not completed. Your selected journey is still ready to verify."
         />
       )}
-      {!token && !bookingError && !fallback && (
+      {!token && !bookingError && (
         <PhysicalWidget
           key={`physical-${verificationKey}`}
           cohort={cohort}
           onVerified={onVerified}
-          onFallback={() => setFallback(true)}
+          sensorOnly
         />
-      )}
-      {!token && !bookingError && fallback && (
-        <div className="rounded-2xl border border-line p-4">
-          <p className="mb-4 text-sm text-muted">Motion sensors aren&apos;t available here. You can use the moving-shape path instead.</p>
-          <PactWidget key={`motion-${verificationKey}`} cohort={cohort} onVerified={onVerified} />
-          <Link
-            to="/account"
-            className="mt-4 block text-center text-sm text-muted underline decoration-accent underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-          >
-            Can&apos;t use a puzzle? Verify with your account instead.
-          </Link>
-        </div>
       )}
       {token && (
         <>
@@ -111,6 +98,7 @@ export default function Phone() {
             onBooked={onBooked}
             onAuthorizationError={onAuthorizationError}
             onRetry={retryVerification}
+            sensorOnly
           />
           <DevPanel token={token} metrics={metrics} booked={booked} />
         </>
