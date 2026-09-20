@@ -14,8 +14,9 @@ Public name on screen and in the voiceover: **ARHV**.
 | 1:40–2:05 | Laptop, **Amplify URL visible**: "Spot the shape" motion puzzle → 3 rounds → Verified. Cut to terminal: `make bench BACKEND=bedrock MODEL=nova-2-lite …` summary + `eval/report.md` table with CIs | "No phone? The perceptual tier hides a shape in moving dots. You see it instantly; a screenshot sees noise. Our Strands agent on Amazon Bedrock, given four frames, got X of N; our human testers got Y of N. Today's agents fail, but that's a moving target, and physical proof is how we step off the treadmill." |
 | 2:05–2:40 | AWS console cuts (3–4 s each): Amplify app · API Gateway routes + authorizers · Lambda functions · DynamoDB items (`STATS#imu-v1`, `JTI#…`) · CloudWatch Logs Insights `authz_decision` rows (ALLOW `permit-physical-book`, DENY `forbid-token-replay`) · Secrets Manager (name only) · Bedrock model | "All of it is serverless on AWS. Amplify hosts the app; API Gateway and Lambda run both verifiers and the Cedar authorizer; DynamoDB makes every challenge and token single-use; Secrets Manager holds the signing key; Bedrock powers the red team. Replay the token and Cedar forbids it. A verification costs a fraction of a cent." |
 | 2:40–2:55 | `make cedar-demo` table → README limitations box → repo URL | "The policies are open-source Cedar, testable offline. Honest limits: web sensors are unattested, and a human farm can still tilt phones; quotas handle that. Agents can think. They can't tilt. The code is in the description." |
-Replace X/Y/N with numbers **from `eval/report.md` / `/v1/stats`**; never estimates. If the Bedrock run didn't
-happen, cut that sentence rather than guess.
+Replace the agent sentence with the observed local result from `eval/report.md`: Nova 2 Lite, K=4, 0/20
+full puzzles and 12/60 rounds correct (95% CI [0.1183, 0.3178]). Add human counts only after H16 produces
+real `/v1/stats` data; if the live Bedrock/human runs did not happen, cut those sentences rather than guess.
 
 ## 2. Recording checklist
 - [ ] Phone: Do Not Disturb, brightness up, portrait lock on, Safari/Chrome with the Amplify URL bar visible.

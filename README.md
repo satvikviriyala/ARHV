@@ -132,6 +132,7 @@ Private Access Control Tokens (Cloudflare, Chrome, Firefox, Edge, Shopify; June 
 ## AI tools used
 - **Claude Code** (Anthropic): implementation, tests, infrastructure-as-code and debugging.
 - **Claude** (claude.ai): research, architecture planning and documentation.
+- **Cursor Agent (GPT-5.6 Luna):** implementation, integration, testing, debugging, and evidence-report generation.
 - Amazon Bedrock models are part of the product (the red team), not coding tools.
 
 ## Credits and licences

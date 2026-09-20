@@ -3,6 +3,7 @@
 ## 1. AI tools used (keep this list true; paste it into the writeup and README)
 - **Claude Code** (Anthropic): implementation, tests, infrastructure-as-code and debugging, driven by the design docs in `docs/`.
 - **Claude** (claude.ai): research, architecture planning and documentation drafting.
+- **Cursor Agent (GPT-5.6 Luna)**: implementation, integration, testing, debugging, and evidence-report generation in the Cursor IDE.
 - *(Add any others the team used, e.g. GitHub Copilot or ChatGPT, with what for.)*
 - Amazon Bedrock models (Nova, Claude) and Ollama models are **part of the product** (the red team), not coding tools.
 
@@ -25,8 +26,10 @@ magnitude, tilt-vs-gravity, gyro-vs-orientation, continuity, timing, targets in 
 stores the trace. Emulated sensors, a dead gyro, a phone flat on a desk, teleporting input and replayed
 recordings are all rejected by the live API; a physics-perfect simulator still passes. We show that on purpose:
 it is exactly the gap vendors must close. (2) A perceptual proof (mdg-v1): a shape visible only in motion; any
-single frame, which is all a screenshot agent sees, is uniform noise. A Strands Agents red team on Amazon Bedrock
-scored X/N (95% CI …) vs humans Y/N. (3) Either proof yields a 120-second single-use token; a Lambda authorizer
+single frame, which is all a screenshot agent sees, is uniform noise. A local-API run of the Strands Agents red
+team on Amazon Bedrock (Nova 2 Lite, K=4) scored 0/20 full puzzles, with 12/60 rounds correct (95% CI
+[0.1183, 0.3178]); no infrastructure-error attempts were counted, and the live human pilot was blocked by the
+undeployed stack. (3) Either proof yields a 120-second single-use token; a Lambda authorizer
 evaluates Cedar policies (permit-physical-book, permit-motion-book, forbid-token-replay, account quota) before the
 protected action runs. (4) A concrete proposal: navigator.physical.request(), an OS-rendered gesture signed by
 the secure sensor hub / TPM / Secure Enclave and redeemed as a private, unlinkable token, an identity-free
@@ -47,9 +50,9 @@ Limitations. Web sensor streams are unattested (a physics-aware simulator passes
 can tilt real phones (quotas and cost handle them). Motor-impaired users need the account path. A purpose-built
 optical-flow solver can beat the perceptual puzzle. Small-N pilot.
 
-AI tools used. Claude Code (implementation), Claude (research, planning, docs). Bedrock models are part of the
-product (the red team), not coding tools.
-Links: repo · live app · video.
+AI tools used. Claude Code (implementation), Claude (research, planning, docs), and Cursor Agent (GPT-5.6 Luna;
+implementation, integration, testing, debugging, and evidence reports). Bedrock models are part of the product
+(the red team), not coding tools. Links: repo · Amplify metadata URL (deployment pending IAM) · video.
 ```
 
 ## 3. README template (replace the placeholder README in S3)
@@ -85,12 +88,12 @@ through random targets; our server checks the sensor physics; spoofs fail, and w
 need vendor attestation. Serverless on AWS (Lambda, API Gateway, DynamoDB, Cedar, Bedrock). Video: <link> · Code: <link>"
 
 ## 6. Compliance checklist (tick every box before the final submit)
-- [ ] Repo **public**; created during the event; no code from older projects; MIT `LICENSE`; credits + licences in README.
+- [x] Repo **public**; created during the event; no code from older projects; MIT `LICENSE`; credits + licences in README.
 - [ ] Video on **YouTube**, **under 3:00**, Public/Unlisted, plays logged-out; **shows AWS** (Amplify URL, console cuts, Bedrock run).
 - [ ] The video shows a **real phone** passing the tilt check (screen + hand), the **live spoof table**, and says
       honestly that the simulator passes (attestation gap).
 - [ ] UI, README, video and writeup use the name **ARHV**; no real organisation's name or logo in the product UI.
-- [ ] Writeup covers **problem, build, where AWS fits**; lists **all AI tools used**; numbers match `eval/report.md`.
+- [x] Writeup covers **problem, build, where AWS fits**; lists **all AI tools used**; numbers match `eval/report.md`.
 - [ ] Every feature claimed in the writeup is **visible in the video** (otherwise remove the claim).
 - [ ] Live URL works in an incognito window on a phone (HTTPS; tilt check passes); the motion puzzle works on a laptop.
 - [ ] (Optional today) Blog published on AWS Builder Center and linked.
