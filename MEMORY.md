@@ -20,15 +20,15 @@
 - Bedrock models verified (alias=id): nova-2-lite=us.amazon.nova-2-lite-v1:0; nova-pro=us.amazon.nova-pro-v1:0; both Nova calls pass; Claude remains unverified/omitted and optional, with no Anthropic form submitted
 - Scaffold: validated reference copied; Phase 0 toolchain, setup, baseline, and Nova smoke green; MIT LICENSE and bootstrap commit complete
 - License: MIT; copyright holder confirmed as `Venkata Satya Satvik Viriyala`; task 0.3 commit `3e18dbf5f4ebffcbaad61cdd7f9daefc6823c700`
-- Baseline: backend 20 passed; ruff/format/eslint/tsc clean; frontend build plus 2 tests passed; Cedar 6-row demo and SAM validation passed
+- Baseline: backend 65 passed; ruff/format/eslint/tsc clean; frontend build plus 2 tests passed; Cedar 6-row demo and SAM validation passed
 - Human pass rate (study cohort): — · Best agent pass rate: —
-- Last green commit: d56bf89 (`feat: physical-first ARHV augmentation (imu-v1)`)
+- Last green commit: 9f8a6ed (`feat(api): integrate imu-v1 verification backend`)
 - Amplify artifact check: local `frontend/dist` has root `index.html` and `assets/`; a locally verified zip built from `dist` has those entries at its root; the live deployment remains unverified
 - Blockers: H0 IAM AdministratorAccess for `liv28`; disable Amplify branch/app access control or password protection for the public demo, upload a root-correct zip, wait for `Succeed`, and recheck JS/CSS content types plus `#root` · H5 user-reported $10 alarm not independently verifiable (`budgets:ViewBudget` denied)
 
 ## Next Steps
 - [x] Sprint S0 (15:45–16:05): preflight, Makefile `imu-demo`, green tests, and physical-first augmentation commit
-- [ ] Sprint S1 (16:05–17:20): backend integration, deploy, and smoke test
+- [ ] Sprint S1 (16:05–17:20): backend integration/local gate passed; deploy and smoke test pending
 - [ ] Sprint S2 (17:20–18:25): frontend physical and motion paths, Amplify deploy, and real-phone test
 - [ ] Sprint S3 (18:25–18:50): live evidence, attack table, Cedar demo, report, and pilot
 - [ ] Sprint S4 (18:50–19:45): video, writeup, public repo, and submission
@@ -176,6 +176,11 @@
   `make imu-demo` printed the six-row attack table with five rejected attacks and the physics-consistent simulator
   passed; `git diff --check` and ReadLints were clean. Committed as `d56bf89` (`feat: physical-first ARHV
   augmentation (imu-v1)`); moving to S1 backend integration.
+- 2026-09-20 16:05 IST — S1 local backend gate passed: `make test-backend` = 65 passed, `make lint` passed
+  ruff/format/eslint/tsc, `cd backend && sam validate --lint` accepted the template, and ReadLints reported no
+  errors. Implemented utilities, DynamoDB store, stats, API handlers for mdg-v1/imu-v1, authorizer, booking,
+  account exchange, worker stub, and smoke script. Committed as `9f8a6ed` (`feat(api): integrate imu-v1
+  verification backend`); deploy and cloud smoke remain.
 
 ## Errors & Fixes
 - 2026-09-19 — `doctor.sh` exited 1 with missing prerequisites → the machine lacks the Phase 0 toolchain → human
@@ -220,6 +225,16 @@
   `AccessDenied` for `liv28` → the current principal cannot verify or grant AdministratorAccess → no IAM
   mutation was attempted; added H0 and continued with local S0 work. Verification: `aws sts get-caller-identity`
   passed and the denied actions were recorded exactly.
+- 2026-09-20 16:00 IST — Initial S1 inspection found the documented backend handler/store files absent from the
+  working tree (only the reference core modules were present) → the scaffold had not materialized the Phase 1
+  implementation → created the documented utilities, handlers, store, tests, and smoke script. Verification:
+  `make test-backend` passed 65 tests and `make lint` passed.
+- 2026-09-20 16:03 IST — Moto rejected `verify_handoff` because its update supplied unused `:expires`, then
+  rejected `deliver_handoff` because its condition lacked `:verified` → removed the unused value and supplied
+  the missing condition value. Verification: targeted handoff test passed and full `make test-backend` passed
+  65 tests.
+- 2026-09-20 16:04 IST — `make lint` first reported six import-order/unused-import diagnostics → applied Ruff's
+  minimal import fixes and formatter. Verification: `make lint` passed with 48 files formatted.
 
 ## Open Issues
 - (none yet)
