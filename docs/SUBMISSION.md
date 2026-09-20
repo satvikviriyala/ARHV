@@ -3,7 +3,10 @@
 ## 1. AI tools used (keep this list true; paste it into the writeup and README)
 - **Claude Code** (Anthropic): implementation, tests, infrastructure-as-code and debugging, driven by the design docs in `docs/`.
 - **Claude** (claude.ai): research, architecture planning and documentation drafting.
-- **Cursor Agent (GPT-5.6 Luna)**: implementation, integration, testing, debugging, and evidence-report generation in the Cursor IDE.
+- **Cursor / Cursor Agent (GPT-5.6 Luna)**: accelerated implementation and integration, including testing,
+  debugging, and evidence-report generation in the Cursor IDE.
+- **HyperFrames**: video generation and production support for the motion-graphic clips listed in
+  `docs/DEMO_VIDEO.md`.
 - *(Add any others the team used, e.g. GitHub Copilot or ChatGPT, with what for.)*
 - Amazon Bedrock models (Nova, Claude) and Ollama models are **part of the product** (the red team), not coding tools.
 

@@ -138,13 +138,15 @@ Private Access Control Tokens (Cloudflare, Chrome, Firefox, Edge, Shopify; June 
 ## AI tools used
 - **Claude Code** (Anthropic): implementation, tests, infrastructure-as-code and debugging.
 - **Claude** (claude.ai): research, architecture planning and documentation.
-- **Cursor Agent (GPT-5.6 Luna):** implementation, integration, testing, debugging, and evidence-report generation.
+- **Cursor / Cursor Agent (GPT-5.6 Luna):** accelerated implementation and integration, including testing,
+  debugging, and evidence-report generation.
 - Amazon Bedrock models are part of the product (the red team), not coding tools.
 
 ## Credits and licences
 React, React Router, Vite, Tailwind CSS (MIT) · AWS Amplify JS + UI (Apache-2.0) · lucide (ISC) · qrcode (MIT) ·
 PyJWT, pytest, ruff (MIT) · boto3, moto, cedarpy, Cedar, Strands Agents (Apache-2.0) · NumPy (BSD-3) ·
 Pillow (MIT-CMU) · Inter, JetBrains Mono (OFL).
+Video generation/production support: HyperFrames.
 
 ## License
 MIT, see [`LICENSE`](LICENSE). ARHV was developed under the codename **PACT**; code identifiers keep that name.
