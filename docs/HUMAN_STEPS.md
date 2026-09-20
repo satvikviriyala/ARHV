@@ -10,7 +10,7 @@
 | H4 | Skip today | Bedrock Anthropic use-case form | Nova 2 Lite / Nova Pro already work; Claude is optional | – |
 | H5 | Optional | Budget alarm email | Billing console or `aws budgets create-budget` (docs/AWS_INFRA.md §7) | 2 min |
 | H6 | Done | GitHub repo | https://github.com/satvikviriyala/ARHV (public) | – |
-| H15 | **After S2 deploy (~18:15)** | **Real-phone test of the tilt check** | Open the Amplify URL on your phone (HTTPS) → Book the last seat → Tilt your phone → Allow motion access (iPhone) → pass 3 times. Also an Android phone if anyone has one. If it fails, open "Show what AWS decided" and send Claude Code the `metrics` + `reasons` | 10 min |
+| H15 | **After S2 deploy (~18:15)** | **Real-phone test of the tilt check** | Open the Amplify URL on your phone (HTTPS) → Search trains → choose a journey → Quick presence check → Tilt your phone gently → Allow motion access (iPhone) → pass 3 times. Also an Android phone if anyone has one. If it fails, open "Show what AWS decided" and send Claude Code the `metrics` + `reasons` | 10 min |
 | H16 | S3 (~18:30) | **3-person pilot** | Send `https://<amplify-url>/phone?cohort=study` (phones) and `https://<amplify-url>/?cohort=study` (laptop motion puzzle) to 3 friends nearby; note who passed on the first try | 15 min |
 | H7 | Skip today | Larger human study | Beyond the 3-person pilot, after the deadline | – |
 | H8–H10 | Skip today | LocalStack token, Ollama model, Cognito test account | Cut list (sprint §3) | – |

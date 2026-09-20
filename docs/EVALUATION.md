@@ -17,8 +17,8 @@ Cohort labels are self-declared (header/query). That's fine for a study you cont
 
 ## 3. Human study protocol (runs Sat night → Sun afternoon)
 - Target **N ≥ 10 people**, ≥ 15 challenges. Recruit via WhatsApp with this message (human step H6):
-  > "Quick favour (30 seconds, anonymous): open <URL>/?cohort=study on your phone or laptop, click 'Book the last
-  > seat' and solve the puzzle once (twice if you like). No sign-up, nothing personal is stored. Thanks!"
+  > "Quick favour (30 seconds, anonymous): open <URL>/?cohort=study on your phone or laptop, search a journey,
+  > choose a service, and complete the presence check once (twice if you like). No sign-up, nothing personal is stored. Thanks!"
 - No coaching beyond the on-screen instructions. Don't pre-train participants. Don't include the builders in `study`
   (use `public`).
 - Stored per attempt: cohort, pass/fail, rounds correct, total time. No personal data.

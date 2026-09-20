@@ -10,7 +10,7 @@ fine. If a future `npm install` errors with ERESOLVE, use `npm install --legacy-
 ## 1. Routes and pages (React Router 8: `createBrowserRouter` + `RouterProvider` from `react-router`)
 | Route | Page | Purpose |
 |---|---|---|
-| `/` | `Home` | Thesis hero + **Rush Hour Counter (demo)**: book the last seat → **VerifyChooser** (phone tilt · motion puzzle) → booking card; scoreboard strip |
+| `/` | `Home` | Thesis hero + **ARHV Rail counter (fictional demo)**: search a journey → choose a service → **VerifyChooser** (phone tilt · motion puzzle) → booking card; scoreboard strip |
 | `/phone` | `Phone` | Mobile-first physical check (`imu-v1`) → booking card; handoff mode with `?h=&k=` (stretch) |
 | `/lab` | `Lab` | Red-team lab: pick model + frames → run → "What the AI saw" → verdict; full scoreboard |
 | `/about` | `About` | How it works, screenshot-vs-motion figure, architecture, Cedar policies, limitations, accessibility, credits, AI tools |
@@ -86,9 +86,10 @@ expired (410) / already_answered (409) → error with "Get a new puzzle"
 - Hero: **"Agents can read any screen. They can't tilt your phone."** Sub: "ARHV checks that a person physically
   moved a real device, just now, for this request. Screen puzzles are a race AI agents are winning; physical
   proof is where verification has to go, and phone makers can make it unforgeable."
-  CTAs: **Try it on your phone** (on laptops: shows the QR to `/phone`) · **Book the last seat** (scrolls to the counter).
-- **Rush Hour Counter (demo)** card: "10:00:00 IST · Tatkal-style rush · 1 seat left" (clearly labelled *fictional
-  demo*; no real brands). Button **Book the last seat** → modal with **VerifyChooser** (§13) → on verified →
+  CTAs: **Try it on your phone** (on laptops: shows the QR to `/phone`) · **Find a journey** (scrolls to the counter).
+- **ARHV Rail counter (fictional demo)** card: route/date/class/quota controls with Bengaluru → Visakhapatnam defaults,
+  followed by three fictional services. Button **Book this journey** → modal headed **Quick presence check** with
+  **VerifyChooser** (§13) → on verified →
   `api.book(token)` → `BookingCard` shows PNR, seat, and "Allowed by Cedar policy `permit-physical-book`" (or
   `permit-motion-book`), plus the proof used ("Physical proof · phone tilt" / "Perceptual proof · motion puzzle").
   Link under the button: *Can't use either? Verify with your account →* (`/account`, cut today: show the link only

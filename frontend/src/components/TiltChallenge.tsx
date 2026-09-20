@@ -76,7 +76,7 @@ export default function TiltChallenge({ challenge, onDone, onUnsupported }: Prop
 
   if (status === "intro" || status === "denied" || status === "no-sensors" || status === "timeout") {
     const msg = {
-      intro: "Hold your phone comfortably, screen up, like you're reading. Tilt it to roll the dot into each ring.",
+      intro: "Tilt your phone gently, screen up, to roll the dot into each ring. Keep each ring filled until it completes.",
       denied: "Motion access was blocked. Allow motion & orientation access for this site, then try again.",
       "no-sensors": "This device has no motion sensors. Open this page on your phone.",
       timeout: "Time's up. Try again with a fresh challenge.",
@@ -129,7 +129,7 @@ export default function TiltChallenge({ challenge, onDone, onUnsupported }: Prop
         )}
         <circle cx={px(dot.dGamma)} cy={px(dot.dBeta)} r={11} className="fill-ink" />
       </svg>
-      <p className="text-sm text-muted">Physical proof: your phone's motion sensors, checked for physical consistency.</p>
+      <p className="max-w-sm text-center text-sm text-muted">About 10 seconds. Your phone&apos;s motion sensors are checked for physical consistency.</p>
     </div>
   );
 }

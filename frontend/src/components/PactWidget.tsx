@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Link } from "react-router";
 import { api, ApiError, type MdgChallenge } from "../lib/api";
 import MdgCanvas from "./MdgCanvas";
 import ShapeOptions from "./ShapeOptions";
@@ -80,13 +81,17 @@ export default function PactWidget({ cohort = "public", onVerified }: Props) {
   }
 
   if (status === "loading") {
-    return <div className="h-[420px] w-full animate-pulse rounded-2xl bg-surface-2" aria-label="Loading puzzle" />;
+    return <div className="h-[420px] w-full rounded-2xl bg-surface-2 motion-safe:animate-pulse" aria-label="Loading puzzle" />;
   }
   if (status === "error") {
     return (
       <div className="flex flex-col items-center gap-4 text-center">
         <p className="text-bad">{message}</p>
-        <button type="button" onClick={() => void load()} className="rounded-xl bg-accent px-5 py-3 font-semibold text-bg">
+        <button
+          type="button"
+          onClick={() => void load()}
+          className="rounded-xl bg-accent px-5 py-3 font-semibold text-bg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        >
           Get a new puzzle
         </button>
       </div>
@@ -96,10 +101,19 @@ export default function PactWidget({ cohort = "public", onVerified }: Props) {
     return (
       <div className="flex flex-col items-center gap-4 text-center">
         <p className="text-bad">Not quite: {correct}/3 right. Humans usually get it on the first or second try.</p>
-        <button type="button" onClick={() => void load()} className="rounded-xl bg-accent px-5 py-3 font-semibold text-bg">
+        <button
+          type="button"
+          onClick={() => void load()}
+          className="rounded-xl bg-accent px-5 py-3 font-semibold text-bg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        >
           Try a new puzzle
         </button>
-        <p className="text-sm text-muted">Can't use this? Verify with your account instead.</p>
+        <Link
+          to="/account"
+          className="text-sm text-muted underline decoration-accent underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        >
+          Can&apos;t use this? Verify with your account instead.
+        </Link>
       </div>
     );
   }

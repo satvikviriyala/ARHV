@@ -22,22 +22,34 @@ export default function VerifyChooser({ onChoose }: Props) {
     <div className="space-y-3">
       {canTilt ? (
         <>
-          <button type="button" onClick={() => onChoose("imu-v1")} className="w-full rounded-xl bg-accent p-4 text-left font-semibold text-bg">
-            Tilt your phone <span className="block text-sm font-normal">Physical proof · recommended</span>
+          <button
+            type="button"
+            onClick={() => onChoose("imu-v1")}
+            className="w-full rounded-xl bg-accent p-4 text-left font-semibold text-bg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          >
+            Tilt your phone gently <span className="block text-sm font-normal">Quick presence check · physical proof</span>
           </button>
-          <button type="button" onClick={() => onChoose("mdg-v1")} className="w-full rounded-xl border border-line p-4 text-left">
-            Spot the shape <span className="block text-sm text-muted">Motion puzzle</span>
+          <button
+            type="button"
+            onClick={() => onChoose("mdg-v1")}
+            className="w-full rounded-xl border border-line p-4 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          >
+            Spot the moving shape <span className="block text-sm text-muted">Screen-based alternative · motion puzzle</span>
           </button>
         </>
       ) : (
         <>
-          <button type="button" onClick={() => onChoose("mdg-v1")} className="w-full rounded-xl bg-accent p-4 text-left font-semibold text-bg">
-            Spot the shape <span className="block text-sm font-normal">Motion puzzle</span>
+          <button
+            type="button"
+            onClick={() => onChoose("mdg-v1")}
+            className="w-full rounded-xl bg-accent p-4 text-left font-semibold text-bg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          >
+            Spot the moving shape <span className="block text-sm font-normal">Screen-based alternative · motion puzzle</span>
           </button>
           <div className="rounded-xl border border-line p-4 text-center">
             <p className="font-medium">Use your phone instead</p>
-            {qr && <img src={qr} alt="QR code for the ARHV phone tilt check" className="mx-auto my-3 size-56" />}
-            <p className="text-sm text-muted">Scan with your phone camera. Tilting a real phone is something a screen-only AI can't do.</p>
+            {qr && <img src={qr} alt="QR code for the ARHV phone tilt check" className="mx-auto my-3 size-56" loading="lazy" />}
+            <p className="text-sm text-muted">Scan with your phone camera. Tilt gently to confirm a journey—something a screen-only AI can&apos;t do.</p>
           </div>
         </>
       )}

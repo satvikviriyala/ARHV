@@ -65,13 +65,17 @@ export default function PhysicalWidget({ cohort = "public", onVerified, onFallba
   }
 
   if (status === "loading") {
-    return <div className="h-[420px] w-full animate-pulse rounded-2xl bg-surface-2" aria-label="Loading physical check" />;
+    return <div className="h-[420px] w-full rounded-2xl bg-surface-2 motion-safe:animate-pulse" aria-label="Loading physical check" />;
   }
   if (status === "error") {
     return (
       <div className="flex flex-col items-center gap-4 text-center">
         <p className="text-bad">{message}</p>
-        <button type="button" onClick={() => void load()} className="rounded-xl bg-accent px-5 py-3 font-semibold text-bg">
+        <button
+          type="button"
+          onClick={() => void load()}
+          className="rounded-xl bg-accent px-5 py-3 font-semibold text-bg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        >
           Try again
         </button>
       </div>
@@ -80,9 +84,13 @@ export default function PhysicalWidget({ cohort = "public", onVerified, onFallba
   if (status === "fallback") {
     return (
       <div className="flex flex-col items-center gap-4 rounded-2xl border border-line p-5 text-center">
-        <p>Motion sensors aren't available here.</p>
-        <button type="button" onClick={onFallback} className="rounded-xl border border-accent px-5 py-3 text-accent">
-          Spot the shape instead
+        <p>Motion sensors aren&apos;t available here for this quick presence check.</p>
+        <button
+          type="button"
+          onClick={onFallback}
+          className="rounded-xl border border-accent px-5 py-3 text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        >
+          Spot the moving shape instead
         </button>
       </div>
     );
@@ -91,7 +99,11 @@ export default function PhysicalWidget({ cohort = "public", onVerified, onFallba
     return (
       <div className="flex flex-col items-center gap-4 text-center">
         <p className="text-bad">{reasonMessage(reasons)}</p>
-        <button type="button" onClick={() => void load()} className="rounded-xl bg-accent px-5 py-3 font-semibold text-bg">
+        <button
+          type="button"
+          onClick={() => void load()}
+          className="rounded-xl bg-accent px-5 py-3 font-semibold text-bg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        >
           Try again
         </button>
         <p className="text-xs text-muted">Metrics are available in “Show what AWS decided”.</p>
@@ -99,7 +111,7 @@ export default function PhysicalWidget({ cohort = "public", onVerified, onFallba
     );
   }
   if (status === "passed") {
-    return <div className="rounded-2xl border border-ok p-5 text-center text-ok">Verified · physical proof · phone tilt</div>;
+    return <div className="rounded-2xl border border-ok p-5 text-center text-ok">Presence verified · physical proof · phone tilt</div>;
   }
   if (!challenge) return null;
   return (
@@ -109,7 +121,7 @@ export default function PhysicalWidget({ cohort = "public", onVerified, onFallba
       ) : (
         <TiltChallenge challenge={challenge} onDone={(trace) => void submit(trace)} onUnsupported={() => setStatus("fallback")} />
       )}
-      <p className="max-w-sm text-center text-xs text-muted">The server checks gravity, orientation, timing, continuity, and gyro motion.</p>
+      <p className="max-w-sm text-center text-xs text-muted">The server checks gravity, orientation, timing, continuity, and gyro motion—not a client-side “done” flag.</p>
       {Object.keys(metrics).length > 0 && <span className="sr-only">{JSON.stringify(metrics)}</span>}
     </div>
   );

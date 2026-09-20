@@ -32,7 +32,7 @@ Lambda, DynamoDB, Secrets Manager, Cognito, Amazon Bedrock, with Cedar policies 
 | T0 perceptual | `mdg-v1`: a shape visible only in motion; any single frame is noise | built and locally verified; cloud deploy pending | screenshot-driven agents | purpose-built optical-flow solvers |
 | T2 vendor-attested | OS-signed physical gesture → private token | proposal ([§7](docs/PHYSICAL.md#7-proposal-vendor-attested-physical-gestures-the-tpm-moment-for-human-verification)) | remote automation and simulators | human farms (quotas handle those) |
 Passing either live proof gives a **120-second, single-use token**. A Lambda authorizer asks **Cedar** whether that
-token may perform the protected action: booking the last seat at a *fictional* "Rush Hour Counter" (a Tatkal-style rush).
+token may perform the protected action: booking a selected journey at a *fictional* ARHV Rail peak-hour counter.
 
 ## How the physical check works (`imu-v1`)
 The phone streams ~60 samples/s of orientation (β, γ, α), acceleration including gravity and rotation rate. The
