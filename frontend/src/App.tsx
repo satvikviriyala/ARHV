@@ -1,18 +1,41 @@
-import { SHAPE_IDS, SHAPE_LABELS, SHAPE_PATHS } from "./lib/shapes";
+import { createBrowserRouter, RouterProvider } from "react-router";
+import Layout from "./components/Layout";
+import { missingConfig } from "./config";
+import About from "./pages/About";
+import Account from "./pages/Account";
+import Home from "./pages/Home";
+import Lab from "./pages/Lab";
+import Phone from "./pages/Phone";
 
-// Phase 0 placeholder. Phase 2 replaces this with the real router + pages (docs/FRONTEND.md).
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <Layout />,
+    children: [
+      { index: true, element: <Home /> },
+      { path: "phone", element: <Phone /> },
+      { path: "lab", element: <Lab /> },
+      { path: "about", element: <About /> },
+      { path: "account", element: <Account /> },
+    ],
+  },
+]);
+
 export default function App() {
-  return (
-    <main className="min-h-dvh p-8 font-sans">
-      <h1 className="text-3xl font-semibold text-accent">PACT scaffold OK</h1>
-      <p className="mt-2 text-muted">Frontend toolchain works. Continue with docs/phases/PHASE_2_FRONTEND_M1.md.</p>
-      <div className="mt-6 flex gap-4">
-        {SHAPE_IDS.map((id) => (
-          <svg key={id} viewBox="-1 -1 2 2" className="size-10 fill-ink" role="img" aria-label={SHAPE_LABELS[id]}>
-            <path d={SHAPE_PATHS[id]} />
-          </svg>
-        ))}
-      </div>
-    </main>
-  );
+  const missing = missingConfig();
+  if (missing.length > 0) {
+    const names = missing
+      .map((key) => `VITE_${key.replace(/[A-Z]/g, (letter) => `_${letter}`).toUpperCase()}`)
+      .join(", ");
+    return (
+      <main className="min-h-dvh bg-bg p-8 font-sans text-ink">
+        <p className="font-mono text-accent">ARHV</p>
+        <h1 className="mt-5 text-3xl font-semibold">Configuration needed</h1>
+        <p className="mt-3 max-w-xl text-muted">
+          This build is missing: {names}. Run <code className="font-mono text-accent">make web-env</code>, rebuild, and reload.
+        </p>
+      </main>
+    );
+  }
+  return <RouterProvider router={router} />;
 }

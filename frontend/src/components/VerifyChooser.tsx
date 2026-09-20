@@ -1,0 +1,46 @@
+import { useEffect, useState } from "react";
+import QRCode from "qrcode";
+import { getCohort } from "../lib/cohort";
+
+type Props = {
+  onChoose: (family: "imu-v1" | "mdg-v1") => void;
+};
+
+export default function VerifyChooser({ onChoose }: Props) {
+  const canTilt =
+    typeof DeviceMotionEvent !== "undefined" &&
+    typeof window !== "undefined" &&
+    window.matchMedia("(pointer: coarse)").matches;
+  const [qr, setQr] = useState("");
+  useEffect(() => {
+    if (canTilt || typeof window === "undefined") return;
+    const cohort = getCohort();
+    const url = `${window.location.origin}/phone${cohort !== "public" ? `?cohort=${encodeURIComponent(cohort)}` : ""}`;
+    void QRCode.toDataURL(url, { margin: 1, width: 220 }).then(setQr);
+  }, [canTilt]);
+  return (
+    <div className="space-y-3">
+      {canTilt ? (
+        <>
+          <button type="button" onClick={() => onChoose("imu-v1")} className="w-full rounded-xl bg-accent p-4 text-left font-semibold text-bg">
+            Tilt your phone <span className="block text-sm font-normal">Physical proof · recommended</span>
+          </button>
+          <button type="button" onClick={() => onChoose("mdg-v1")} className="w-full rounded-xl border border-line p-4 text-left">
+            Spot the shape <span className="block text-sm text-muted">Motion puzzle</span>
+          </button>
+        </>
+      ) : (
+        <>
+          <button type="button" onClick={() => onChoose("mdg-v1")} className="w-full rounded-xl bg-accent p-4 text-left font-semibold text-bg">
+            Spot the shape <span className="block text-sm font-normal">Motion puzzle</span>
+          </button>
+          <div className="rounded-xl border border-line p-4 text-center">
+            <p className="font-medium">Use your phone instead</p>
+            {qr && <img src={qr} alt="QR code for the ARHV phone tilt check" className="mx-auto my-3 size-56" />}
+            <p className="text-sm text-muted">Scan with your phone camera. Tilting a real phone is something a screen-only AI can't do.</p>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
