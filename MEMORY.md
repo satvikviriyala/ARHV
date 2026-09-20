@@ -22,7 +22,7 @@
 - License: MIT; copyright holder confirmed as `Venkata Satya Satvik Viriyala`; task 0.3 commit `3e18dbf5f4ebffcbaad61cdd7f9daefc6823c700`
 - Baseline: backend 66 passed; frontend 10 passed; Ruff/format/ESLint/TypeScript clean; Cedar 7-row demo, SAM validation, and containerized SAM build passed
 - Human pass rate (study cohort): — · Best agent pass rate: —
-- Last green commit: fac54af (`docs: record rail UI verification`)
+- Last green commit: fbab01b (`docs: record deployed rail UI`)
 - Amplify artifact check: local `frontend/dist` has root `index.html` and `assets/`; live root returned 200 `text/html` (793 bytes), JS returned 200 `text/javascript` (374258 bytes), CSS returned 200 `text/css` (16331 bytes); browser/CDP found `#root`, one child, the ARHV document title/content, and no dynamic-import error
 - Frontend environment: production/development files generated from `pact-dev` outputs by `make web-env`
 - Cloud smoke: `make smoke` passed every listed check, including live `imu-v1` pass/booking/replay/explain and orientation spoof rejection
@@ -280,6 +280,8 @@
   job 6 reported `SUCCEED`, and the live URL remained `https://main.d1i6xn1rxjcnkk.amplifyapp.com`.
   Post-deploy smoke with `--no-agent`, live `imu-demo`, root/asset checks, and browser snapshots of Home and `/phone`
   all passed. No real-phone success is inferred.
+- 2026-09-20 17:57 IST — Pushed verified `main` through `fbab01b` to public GitHub `origin/main`; the only
+  untracked file is the user-supplied reference screenshot `IRCTC.png`, which was not added or used by the product.
 
 ## Errors & Fixes
 - 2026-09-19 — `doctor.sh` exited 1 with missing prerequisites → the machine lacks the Phase 0 toolchain → human
