@@ -15,6 +15,7 @@ fine. If a future `npm install` errors with ERESOLVE, use `npm install --legacy-
 | `/lab` | `Lab` | Red-team lab: pick model + frames → run → "What the AI saw" → verdict; full scoreboard |
 | `/about` | `About` | How it works, screenshot-vs-motion figure, architecture, Cedar policies, limitations, accessibility, credits, AI tools |
 | `/account` | `AccountVerify` (**lazy**) | Cognito Authenticator → account token → back to booking (Phase 4) |
+| `/booking/confirmed` | `BookingConfirmation` | Dedicated fictional ARHV Rail confirmation after the protected booking response |
 Amplify SPA rewrite rule is set by `scripts/bootstrap_amplify.py` so deep links work.
 `?cohort=study` on any URL → stored in `sessionStorage` and sent as `x-pact-cohort` on challenge creation.
 
@@ -90,8 +91,11 @@ expired (410) / already_answered (409) → error with "Get a new puzzle"
 - **ARHV Rail counter (fictional demo)** card: route/date/class/quota controls with Bengaluru → Visakhapatnam defaults,
   followed by three fictional services. Button **Book this journey** → modal headed **Quick presence check** with
   **VerifyChooser** (§13) → on verified →
-  `api.book(token)` → `BookingCard` shows PNR, seat, and "Allowed by Cedar policy `permit-physical-book`" (or
-  `permit-motion-book`), plus the proof used ("Physical proof · phone tilt" / "Perceptual proof · motion puzzle").
+  `api.book(token)` → navigate to `/booking/confirmed`, where `BookingConfirmation` shows the fictional booking
+  reference, seat, route, date, class, and "Allowed by Cedar policy `permit-physical-book`" (or
+  `permit-motion-book`). A failed verification or 401/403 booking authorization renders the prominent
+  "Suspicious activity detected. Please try human verification again." state with a fresh-challenge retry; route
+  form values remain intact.
   Link under the button: *Can't use either? Verify with your account →* (`/account`, cut today: show the link only
   if the page exists).
 - `DevPanel` (toggle "Show what AWS decided"): decoded token claims (`asr`, `prf`, `exp`, `jti`), the imu verifier

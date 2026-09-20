@@ -1,5 +1,6 @@
 import { createBrowserRouter, RouterProvider } from "react-router";
 import Layout from "./components/Layout";
+import BookingConfirmation from "./components/BookingConfirmation";
 import { missingConfig } from "./config";
 import About from "./pages/About";
 import Account from "./pages/Account";
@@ -17,6 +18,7 @@ const router = createBrowserRouter([
       { path: "lab", element: <Lab /> },
       { path: "about", element: <About /> },
       { path: "account", element: <Account /> },
+      { path: "booking/confirmed", element: <BookingConfirmation /> },
     ],
   },
 ]);

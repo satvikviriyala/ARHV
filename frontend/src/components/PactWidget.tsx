@@ -20,6 +20,7 @@ export default function PactWidget({ cohort = "public", onVerified }: Props) {
   const [correct, setCorrect] = useState(0);
   const [message, setMessage] = useState("");
   const firstFrame = useRef<number | null>(null);
+  const retryButton = useRef<HTMLButtonElement>(null);
 
   const load = useCallback(async () => {
     setStatus("loading");
@@ -44,6 +45,9 @@ export default function PactWidget({ cohort = "public", onVerified }: Props) {
     const timer = window.setTimeout(() => void load(), 0);
     return () => window.clearTimeout(timer);
   }, [load]);
+  useEffect(() => {
+    if (status === "failed") retryButton.current?.focus();
+  }, [status]);
 
   async function choose(answer: string) {
     if (!challenge || status !== "round") return;
@@ -99,14 +103,17 @@ export default function PactWidget({ cohort = "public", onVerified }: Props) {
   }
   if (status === "failed") {
     return (
-      <div className="flex flex-col items-center gap-4 text-center">
-        <p className="text-bad">Not quite: {correct}/3 right. Humans usually get it on the first or second try.</p>
+      <div className="flex flex-col items-center gap-4 rounded-2xl border border-bad bg-bad/5 p-5 text-center" role="alert">
+        <p className="font-mono text-xs tracking-[0.18em] text-bad">VERIFICATION REQUIRED</p>
+        <p className="text-lg font-semibold text-bad">Suspicious activity detected. Please try human verification again.</p>
+        <p className="text-sm text-muted">The motion puzzle result was not enough to confirm a person ({correct}/3 rounds).</p>
         <button
+          ref={retryButton}
           type="button"
           onClick={() => void load()}
           className="rounded-xl bg-accent px-5 py-3 font-semibold text-bg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
         >
-          Try a new puzzle
+          Try verification again
         </button>
         <Link
           to="/account"
@@ -141,7 +148,7 @@ export default function PactWidget({ cohort = "public", onVerified }: Props) {
           firstFrame.current = performance.now();
         }}
       />
-      {status === "round" && <ShapeOptions options={current.options} onSelect={(option) => void choose(option)} />}
+      {status === "round" && <ShapeOptions options={current.options} onSelect={(option) => void choose(option)} autoFocus />}
     </div>
   );
 }

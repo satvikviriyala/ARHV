@@ -1,13 +1,18 @@
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { SHAPE_LABELS, SHAPE_PATHS, type ShapeId } from "../lib/shapes";
 
 type Props = {
   options: string[];
   onSelect: (option: string) => void;
+  autoFocus?: boolean;
 };
 
-export default function ShapeOptions({ options, onSelect }: Props) {
+export default function ShapeOptions({ options, onSelect, autoFocus = false }: Props) {
   const buttons = useRef<Array<HTMLButtonElement | null>>([]);
+  useEffect(() => {
+    if (autoFocus) buttons.current[0]?.focus();
+  }, [autoFocus, options]);
+
   const focus = (index: number) => {
     buttons.current[(index + options.length) % options.length]?.focus();
   };

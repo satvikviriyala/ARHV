@@ -1,15 +1,17 @@
 import { useCallback, useState } from "react";
-import { Link } from "react-router";
-import { useSearchParams } from "react-router";
+import { Link, useNavigate, useSearchParams } from "react-router";
 import BookingCard from "../components/BookingCard";
 import DevPanel from "../components/DevPanel";
 import JourneySearch from "../components/JourneySearch";
 import PhysicalWidget from "../components/PhysicalWidget";
 import PactWidget from "../components/PactWidget";
+import VerificationFailure from "../components/VerificationFailure";
+import type { Booking } from "../lib/api";
 import { getCohort } from "../lib/cohort";
 import { DEFAULT_JOURNEY, formatJourneyDate, journeyLabel, TRAIN_OPTIONS, type Journey } from "../lib/rail";
 
 export default function Phone() {
+  const navigate = useNavigate();
   const [params] = useSearchParams();
   const cohort = params.get("cohort") ?? getCohort();
   const [journey, setJourney] = useState<Journey>(DEFAULT_JOURNEY);
@@ -18,12 +20,32 @@ export default function Phone() {
   const [metrics, setMetrics] = useState<Record<string, unknown>>({});
   const [fallback, setFallback] = useState(false);
   const [booked, setBooked] = useState(false);
+  const [bookingError, setBookingError] = useState(false);
+  const [verificationKey, setVerificationKey] = useState(0);
   const train = TRAIN_OPTIONS[0]!;
   const onVerified = useCallback((newToken: string, details?: { assurance?: "motion" | "physical"; metrics?: Record<string, unknown> }) => {
     setToken(newToken);
     setMetrics(details?.metrics ?? {});
+    setBookingError(false);
   }, []);
-  const onBooked = useCallback(() => setBooked(true), []);
+  const onBooked = useCallback(
+    (booking: Booking) => {
+      setBooked(true);
+      navigate("/booking/confirmed", { state: { booking, journey, train } });
+    },
+    [journey, navigate, train],
+  );
+  const onAuthorizationError = useCallback(() => {
+    setToken("");
+    setBooked(false);
+    setBookingError(true);
+  }, []);
+  const retryVerification = useCallback(() => {
+    setToken("");
+    setMetrics({});
+    setBookingError(false);
+    setVerificationKey((value) => value + 1);
+  }, []);
   return (
     <div className="mx-auto max-w-lg space-y-6">
       <section className="rounded-2xl border border-line bg-surface p-5">
@@ -54,11 +76,24 @@ export default function Phone() {
           </div>
         )}
       </section>
-      {!token && !fallback && <PhysicalWidget cohort={cohort} onVerified={onVerified} onFallback={() => setFallback(true)} />}
-      {!token && fallback && (
+      {bookingError && (
+        <VerificationFailure
+          onRetry={retryVerification}
+          context="The booking was not completed. Your selected journey is still ready to verify."
+        />
+      )}
+      {!token && !bookingError && !fallback && (
+        <PhysicalWidget
+          key={`physical-${verificationKey}`}
+          cohort={cohort}
+          onVerified={onVerified}
+          onFallback={() => setFallback(true)}
+        />
+      )}
+      {!token && !bookingError && fallback && (
         <div className="rounded-2xl border border-line p-4">
           <p className="mb-4 text-sm text-muted">Motion sensors aren&apos;t available here. You can use the moving-shape path instead.</p>
-          <PactWidget cohort={cohort} onVerified={onVerified} />
+          <PactWidget key={`motion-${verificationKey}`} cohort={cohort} onVerified={onVerified} />
           <Link
             to="/account"
             className="mt-4 block text-center text-sm text-muted underline decoration-accent underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
@@ -69,7 +104,14 @@ export default function Phone() {
       )}
       {token && (
         <>
-          <BookingCard token={token} journey={journey} train={train} onBooked={onBooked} />
+          <BookingCard
+            token={token}
+            journey={journey}
+            train={train}
+            onBooked={onBooked}
+            onAuthorizationError={onAuthorizationError}
+            onRetry={retryVerification}
+          />
           <DevPanel token={token} metrics={metrics} booked={booked} />
         </>
       )}

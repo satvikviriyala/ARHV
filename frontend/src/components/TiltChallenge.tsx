@@ -17,16 +17,21 @@ type Props = {
   challenge: ImuChallenge;
   onDone: (trace: ImuTrace) => void;
   onUnsupported?: () => void;
+  autoFocus?: boolean;
 };
 
 type Status = "intro" | "denied" | "no-sensors" | "running" | "timeout";
 
-export default function TiltChallenge({ challenge, onDone, onUnsupported }: Props) {
+export default function TiltChallenge({ challenge, onDone, onUnsupported, autoFocus = true }: Props) {
   const [status, setStatus] = useState<Status>("intro");
   const [state, setState] = useState<TrackerState | null>(null);
   const recorder = useRef<ImuRecorder | null>(null);
+  const startButton = useRef<HTMLButtonElement>(null);
 
   useEffect(() => () => recorder.current?.stop(), []);
+  useEffect(() => {
+    if (autoFocus && status === "intro") startButton.current?.focus();
+  }, [autoFocus, status]);
 
   async function start() {
     const permission = await requestMotionPermission(); // runs inside the tap handler (iOS requirement)
@@ -86,6 +91,7 @@ export default function TiltChallenge({ challenge, onDone, onUnsupported }: Prop
         <p className="max-w-sm text-muted">{msg}</p>
         {status === "intro" && (
           <button
+            ref={startButton}
             onClick={start}
             className="rounded-xl bg-accent px-6 py-3 font-semibold text-bg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
           >

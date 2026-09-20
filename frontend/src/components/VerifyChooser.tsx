@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import QRCode from "qrcode";
 import { getCohort } from "../lib/cohort";
 
@@ -12,6 +12,10 @@ export default function VerifyChooser({ onChoose }: Props) {
     typeof window !== "undefined" &&
     window.matchMedia("(pointer: coarse)").matches;
   const [qr, setQr] = useState("");
+  const firstChoice = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    firstChoice.current?.focus();
+  }, [canTilt]);
   useEffect(() => {
     if (canTilt || typeof window === "undefined") return;
     const cohort = getCohort();
@@ -23,6 +27,7 @@ export default function VerifyChooser({ onChoose }: Props) {
       {canTilt ? (
         <>
           <button
+            ref={firstChoice}
             type="button"
             onClick={() => onChoose("imu-v1")}
             className="w-full rounded-xl bg-accent p-4 text-left font-semibold text-bg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
@@ -40,6 +45,7 @@ export default function VerifyChooser({ onChoose }: Props) {
       ) : (
         <>
           <button
+            ref={firstChoice}
             type="button"
             onClick={() => onChoose("mdg-v1")}
             className="w-full rounded-xl bg-accent p-4 text-left font-semibold text-bg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"

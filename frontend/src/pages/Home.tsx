@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { ShieldCheck, TrainFront } from "lucide-react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { api, type Booking } from "../lib/api";
 import { getCohort } from "../lib/cohort";
 import { ci, pct } from "../lib/format";
@@ -10,12 +10,14 @@ import JourneySearch from "../components/JourneySearch";
 import PactWidget from "../components/PactWidget";
 import PhysicalWidget from "../components/PhysicalWidget";
 import TrainResults from "../components/TrainResults";
+import VerificationFailure from "../components/VerificationFailure";
 import VerifyChooser from "../components/VerifyChooser";
 import { DEFAULT_JOURNEY, formatJourneyDate, journeyLabel, type Journey, type TrainOption } from "../lib/rail";
 
 type Family = "imu-v1" | "mdg-v1";
 
 export default function Home() {
+  const navigate = useNavigate();
   const cohort = getCohort();
   const [journey, setJourney] = useState<Journey>(DEFAULT_JOURNEY);
   const [searched, setSearched] = useState(false);
@@ -25,6 +27,8 @@ export default function Home() {
   const [token, setToken] = useState("");
   const [metrics, setMetrics] = useState<Record<string, unknown>>({});
   const [booked, setBooked] = useState<Booking | null>(null);
+  const [bookingError, setBookingError] = useState(false);
+  const [verificationKey, setVerificationKey] = useState(0);
   const [scoreboard, setScoreboard] = useState<{ attempts: number; passes: number; passCi: [number, number] } | null>(null);
 
   useEffect(() => {
@@ -37,11 +41,20 @@ export default function Home() {
       .catch(() => setScoreboard(null));
   }, []);
 
-  const onBooked = useCallback((result: Booking) => setBooked(result), []);
+  const onBooked = useCallback(
+    (result: Booking) => {
+      setBooked(result);
+      if (selectedTrain) {
+        navigate("/booking/confirmed", { state: { booking: result, journey, train: selectedTrain } });
+      }
+    },
+    [journey, navigate, selectedTrain],
+  );
   const onSearch = useCallback(() => {
     setSearched(true);
     setSelectedTrain(null);
     setToken("");
+    setBookingError(false);
     setBooked(null);
     const target = document.getElementById("journey-search");
     target?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
@@ -49,17 +62,38 @@ export default function Home() {
   const openVerification = useCallback((train: TrainOption) => {
     setSelectedTrain(train);
     setFamily(null);
+    setToken("");
+    setMetrics({});
+    setBookingError(false);
+    setVerificationKey((value) => value + 1);
     setOpen(true);
   }, []);
   const verified = useCallback(
     (newToken: string, details?: { assurance?: "motion" | "physical"; metrics?: Record<string, unknown> }) => {
       setToken(newToken);
       setMetrics(details?.metrics ?? {});
+      setBookingError(false);
       setOpen(false);
       setFamily(null);
     },
     [],
   );
+  const onAuthorizationError = useCallback(() => {
+    setToken("");
+    setBooked(null);
+    setBookingError(true);
+    setOpen(false);
+    setFamily(null);
+  }, []);
+  const retryVerification = useCallback(() => {
+    setToken("");
+    setMetrics({});
+    setBooked(null);
+    setBookingError(false);
+    setFamily(null);
+    setVerificationKey((value) => value + 1);
+    setOpen(true);
+  }, []);
 
   return (
     <div className="space-y-12">
@@ -150,8 +184,30 @@ export default function Home() {
             <p className="font-mono text-xs tracking-[0.18em] text-accent">PROTECTED ACTION</p>
             <h2 id="booking-result-heading" className="mt-2 text-2xl font-semibold">Your journey is ready</h2>
           </div>
-          <BookingCard token={token} journey={journey} train={selectedTrain} onBooked={onBooked} />
+          <BookingCard
+            token={token}
+            journey={journey}
+            train={selectedTrain}
+            onBooked={onBooked}
+            onAuthorizationError={onAuthorizationError}
+            onRetry={retryVerification}
+          />
           <DevPanel token={token} metrics={metrics} booked={Boolean(booked)} />
+        </section>
+      )}
+
+      {bookingError && selectedTrain && (
+        <section className="space-y-4" aria-labelledby="booking-error-heading">
+          <div>
+            <p className="font-mono text-xs tracking-[0.18em] text-accent">PROTECTED ACTION</p>
+            <h2 id="booking-error-heading" className="mt-2 text-2xl font-semibold">
+              We need to verify this journey again
+            </h2>
+          </div>
+          <VerificationFailure
+            onRetry={retryVerification}
+            context={`${selectedTrain.name} was not booked. Your route, date, and class are preserved.`}
+          />
         </section>
       )}
 
@@ -210,7 +266,7 @@ export default function Home() {
               A short physical or perceptual check confirms a person is present before ARHV holds the demo seat.
             </p>
             <div className="mt-6">
-              {!family && <VerifyChooser onChoose={(choice) => setFamily(choice)} />}
+              {!family && <VerifyChooser key={`chooser-${verificationKey}`} onChoose={(choice) => setFamily(choice)} />}
               {family && (
                 <button
                   type="button"
@@ -220,8 +276,15 @@ export default function Home() {
                   Choose another verification path
                 </button>
               )}
-              {family === "imu-v1" && <PhysicalWidget cohort={cohort} onVerified={verified} onFallback={() => setFamily("mdg-v1")} />}
-              {family === "mdg-v1" && <PactWidget cohort={cohort} onVerified={verified} />}
+              {family === "imu-v1" && (
+                <PhysicalWidget
+                  key={`physical-${verificationKey}`}
+                  cohort={cohort}
+                  onVerified={verified}
+                  onFallback={() => setFamily("mdg-v1")}
+                />
+              )}
+              {family === "mdg-v1" && <PactWidget key={`motion-${verificationKey}`} cohort={cohort} onVerified={verified} />}
             </div>
           </div>
         </div>
